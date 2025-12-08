@@ -18,8 +18,8 @@ export default function Navbar() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-20 items-center">
             <div className="flex-shrink-0 flex items-center">
-              <Link to="/" className="text-2xl font-display font-bold text-white tracking-tighter">
-                AI<span className="text-primary">HR</span>
+              <Link to="/" className="text-3xl font-display font-bold text-white tracking-tighter">
+                Hire<span className="text-primary">Desk</span>
               </Link>
             </div>
             <div className="hidden sm:flex sm:space-x-8">
@@ -51,7 +51,7 @@ export default function Navbar() {
                     onClick={() => setSignUpModalOpen(true)}
                     className="px-5 py-2 rounded-full bg-primary text-dark text-sm font-medium hover:bg-white transition-colors duration-300"
                   >
-                    Sign Up
+                    Sign Up 
                   </button>
                 </>
               )}

@@ -143,7 +143,7 @@ export default function Home() {
       {/* Footer */}
       <footer className="py-12 bg-surface border-t border-gray-800">
         <div className="container mx-auto px-6 text-center">
-          <p className="text-gray-500">© 2024 AI HR Tracker. All rights reserved.</p>
+          <p className="text-gray-500">© 2024 HireDesk. All rights reserved.</p>
         </div>
       </footer>
     </div>

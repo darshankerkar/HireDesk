@@ -229,40 +229,6 @@ export default function CandidateProfileModal({ isOpen, onClose, candidate }) {
               </div>
             </div>
 
-            {/* Professional Summary */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Experience */}
-              <div className="bg-dark rounded-xl border border-gray-800 p-6">
-                <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                  <Briefcase className="h-5 w-5 text-primary" />
-                  Experience
-                </h3>
-                <div className="text-center">
-                  <div className="text-4xl font-bold text-primary">{experience}</div>
-                  <div className="text-gray-400 text-sm mt-1">Years</div>
-                </div>
-              </div>
-
-              {/* Certifications */}
-              <div className="bg-dark rounded-xl border border-gray-800 p-6">
-                <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                  <Award className="h-5 w-5 text-primary" />
-                  Certifications
-                </h3>
-                {certifications.length > 0 ? (
-                  <div className="space-y-2">
-                    {certifications.map((cert, index) => (
-                      <div key={index} className="px-3 py-2 bg-primary/10 rounded-lg border border-primary/30 text-primary text-sm">
-                        {cert}
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-gray-500 text-sm text-center">No certifications listed</p>
-                )}
-              </div>
-            </div>
-
             {/* Skills */}
             {skills && skills.length > 0 && (
               <div className="bg-dark rounded-xl border border-gray-800 p-6">

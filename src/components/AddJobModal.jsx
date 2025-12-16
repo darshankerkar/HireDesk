@@ -30,7 +30,27 @@ export default function AddJobModal({ isOpen, onClose, onJobAdded }) {
       setRequirements('');
     } catch (err) {
       console.error("Job creation error:", err);
-      setError(err.response?.data?.detail || err.response?.data?.message || 'Failed to create job');
+      console.error("Error response:", err.response);
+      console.error("Error data:", err.response?.data);
+      
+      let errorMessage = 'Failed to create job';
+      
+      if (err.response?.data) {
+        // Check for various error formats
+        if (typeof err.response.data === 'string') {
+          errorMessage = err.response.data;
+        } else if (err.response.data.detail) {
+          errorMessage = err.response.data.detail;
+        } else if (err.response.data.message) {
+          errorMessage = err.response.data.message;
+        } else if (err.response.data.error) {
+          errorMessage = err.response.data.error;
+        } else {
+          errorMessage = JSON.stringify(err.response.data);
+        }
+      }
+      
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

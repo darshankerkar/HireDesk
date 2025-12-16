@@ -10,10 +10,33 @@ export default function CandidateProfileModal({ isOpen, onClose, candidate }) {
   
   const score = candidate.score || 0;
   const skills = parsedData.skills || [];
-  const experience = parsedData.years || 0;
+  
+  // Try multiple field names for experience
+  const experience = parsedData.years || parsedData.experience_years || parsedData.years_of_experience || 0;
+  
   const certifications = parsedData.certifications || [];
   const explanation = parsedData.explanation || [];
   const uploadedAt = resume?.uploaded_at;
+
+  // Extract name from email if candidate name looks generic or empty
+  const getDisplayName = () => {
+    const name = candidate.name;
+    // Check if name is generic/placeholder
+    if (!name || name.toLowerCase().includes('resume') || name.toLowerCase().includes('candidate') || name.toLowerCase().includes('cv')) {
+      // Extract from email
+      if (candidate.email) {
+        const emailPart = candidate.email.split('@')[0];
+        // Convert john.doe or john_doe to John Doe
+        const cleanName = emailPart.replace(/[._]/g, ' ').split(' ')
+          .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+          .join(' ');
+        return cleanName;
+      }
+    }
+    return name;
+  };
+
+  const displayName = getDisplayName();
 
   // Format uploaded date
   const formatDate = (dateString) => {
@@ -43,6 +66,18 @@ export default function CandidateProfileModal({ isOpen, onClose, candidate }) {
     return 'from-red-600 to-red-400';
   };
 
+  // Handle resume download
+  const handleDownloadResume = () => {
+    if (resume?.file) {
+      const link = document.createElement('a');
+      link.href = resume.file;
+      link.download = `Resume_${displayName.replace(/\s+/g, '_')}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
+
   return (
     <AnimatePresence>
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -68,10 +103,10 @@ export default function CandidateProfileModal({ isOpen, onClose, candidate }) {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <div className="h-14 w-14 rounded-full bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center text-white text-2xl font-bold shadow-lg">
-                  {candidate.name.charAt(0)}
+                  {displayName.charAt(0)}
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold text-white">{candidate.name}</h2>
+                  <h2 className="text-2xl font-bold text-white">{displayName}</h2>
                   <p className="text-gray-400 text-sm">Candidate Profile</p>
                 </div>
               </div>
@@ -219,15 +254,13 @@ export default function CandidateProfileModal({ isOpen, onClose, candidate }) {
                   <FileText className="h-5 w-5 text-primary" />
                   Resume Document
                 </h3>
-                <a
-                  href={resume.file}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-primary/20 hover:bg-primary/30 border border-primary/50 rounded-lg text-primary transition-colors"
+                <button
+                  onClick={handleDownloadResume}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-primary/20 hover:bg-primary/30 border border-primary/50 rounded-lg text-primary transition-colors cursor-pointer"
                 >
                   <FileText className="h-4 w-4" />
                   View Full Resume
-                </a>
+                </button>
               </div>
             )}
           </div>

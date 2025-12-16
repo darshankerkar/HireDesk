@@ -18,6 +18,17 @@ export default function CandidateProfileModal({ isOpen, onClose, candidate }) {
   const explanation = parsedData.explanation || [];
   const uploadedAt = resume?.uploaded_at;
 
+  // Debug logging
+  console.log('=== Candidate Profile Debug ===');
+  console.log('Candidate:', candidate);
+  console.log('Resume:', resume);
+  console.log('Parsed Data:', parsedData);
+  console.log('Experience (years):', experience);
+  console.log('Skills:', skills);
+  console.log('Certifications:', certifications);
+  console.log('Explanation:', explanation);
+  console.log('================================');
+
   // Extract name from email if candidate name looks generic or empty
   const getDisplayName = () => {
     const name = candidate.name;
@@ -66,12 +77,37 @@ export default function CandidateProfileModal({ isOpen, onClose, candidate }) {
     return 'from-red-600 to-red-400';
   };
 
-  // Handle resume download
-  const handleDownloadResume = () => {
-    if (resume?.file) {
+  // Handle resume download with better error handling
+  const handleDownloadResume = async () => {
+    console.log('=== Download Debug ===');
+    console.log('Resume object:', resume);
+    console.log('Resume file URL:', resume?.file);
+    console.log('Parsed data:', parsedData);
+    
+    if (!resume?.file) {
+      alert('Resume file not available. Please contact support.');
+      return;
+    }
+
+    try {
+      // For CORS-friendly download
+      const response = await fetch(resume.file);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Resume_${displayName.replace(/\s+/g, '_')}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Download error:', error);
+      // Fallback to direct download
       const link = document.createElement('a');
       link.href = resume.file;
       link.download = `Resume_${displayName.replace(/\s+/g, '_')}.pdf`;
+      link.target = '_blank';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);

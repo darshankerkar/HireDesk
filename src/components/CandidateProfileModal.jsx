@@ -77,21 +77,25 @@ export default function CandidateProfileModal({ isOpen, onClose, candidate }) {
     return 'from-red-600 to-red-400';
   };
 
-  // Handle resume download with better error handling
+  // Handle resume download with proper API endpoint
   const handleDownloadResume = async () => {
     console.log('=== Download Debug ===');
     console.log('Resume object:', resume);
-    console.log('Resume file URL:', resume?.file);
-    console.log('Parsed data:', parsedData);
+    console.log('Download URL:', resume?.download_url);
     
-    if (!resume?.file) {
+    if (!resume?.download_url) {
       alert('Resume file not available. Please contact support.');
       return;
     }
 
     try {
-      // For CORS-friendly download
-      const response = await fetch(resume.file);
+      const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api';
+      const downloadUrl = `${apiBaseUrl}${resume.download_url}`;
+      
+      // Fetch the file as a blob
+      const response = await fetch(downloadUrl);
+      if (!response.ok) throw new Error('Download failed');
+      
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -103,15 +107,20 @@ export default function CandidateProfileModal({ isOpen, onClose, candidate }) {
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Download error:', error);
-      // Fallback to direct download
-      const link = document.createElement('a');
-      link.href = resume.file;
-      link.download = `Resume_${displayName.replace(/\s+/g, '_')}.pdf`;
-      link.target = '_blank';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      alert('Failed to download resume. Please try again.');
     }
+  };
+
+  // Handle view resume in new tab
+  const handleViewResume = () => {
+    if (!resume?.view_url) {
+      alert('Resume file not available. Please contact support.');
+      return;
+    }
+
+    const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api';
+    const viewUrl = `${apiBaseUrl}${resume.view_url}`;
+    window.open(viewUrl, '_blank');
   };
 
   return (
@@ -257,7 +266,7 @@ export default function CandidateProfileModal({ isOpen, onClose, candidate }) {
                   Resume Document
                 </h3>
                 <button
-                  onClick={handleDownloadResume}
+                  onClick={handleViewResume}
                   className="inline-flex items-center gap-2 px-4 py-2 bg-primary/20 hover:bg-primary/30 border border-primary/50 rounded-lg text-primary transition-colors cursor-pointer"
                 >
                   <FileText className="h-4 w-4" />
@@ -276,14 +285,13 @@ export default function CandidateProfileModal({ isOpen, onClose, candidate }) {
               >
                 Close
               </button>
-              {resume?.file && (
-                <a
-                  href={resume.file}
-                  download
+              {resume?.download_url && (
+                <button
+                  onClick={handleDownloadResume}
                   className="px-6 py-2 bg-primary hover:bg-white text-dark rounded-lg transition-colors font-medium"
                 >
                   Download Resume
-                </a>
+                </button>
               )}
             </div>
           </div>

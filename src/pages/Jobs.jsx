@@ -67,18 +67,34 @@ export default function Jobs() {
     setJobs(jobs.map(job => job.id === updatedJob.id ? updatedJob : job));
   };
 
-  const handleDownloadResume = (e, candidate) => {
+  const handleDownloadResume = async (e, candidate) => {
     e.stopPropagation();
-    if (candidate.resume && candidate.resume.file) {
-      // Create a temporary link to trigger download
+    
+    if (!candidate.resume?.download_url) {
+      alert("No resume file available.");
+      return;
+    }
+
+    try {
+      const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api';
+      const downloadUrl = `${apiBaseUrl}${candidate.resume.download_url}`;
+      
+      // Fetch the file as a blob
+      const response = await fetch(downloadUrl);
+      if (!response.ok) throw new Error('Download failed');
+      
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
-      link.href = candidate.resume.file;
-      link.download = `Resume_${candidate.name.replace(/\s+/g, '_')}.pdf`; // Suggest a filename
+      link.href = url;
+      link.download = `Resume_${candidate.name.replace(/\s+/g, '_')}.pdf`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-    } else {
-      alert("No resume file available.");
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Download error:', error);
+      alert('Failed to download resume. Please try again.');
     }
   };
 

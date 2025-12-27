@@ -105,36 +105,36 @@ const BulkUpload = () => {
   const getStatusIcon = (status) => {
     switch (status) {
       case 'success':
-        return <CheckCircle className="w-5 h-5 text-green-500" />;
+        return <CheckCircle className="w-5 h-5 text-primary" />;
       case 'failed':
         return <XCircle className="w-5 h-5 text-red-500" />;
       case 'skipped':
         return <AlertCircle className="w-5 h-5 text-yellow-500" />;
       default:
-        return <Loader className="w-5 h-5 text-blue-500 animate-spin" />;
+        return <Loader className="w-5 h-5 text-primary animate-spin" />;
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 p-8">
+    <div className="min-h-screen bg-dark text-secondary p-8">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent mb-2">
-            Bulk Upload Candidates
+          <h1 className="text-5xl font-display font-bold mb-2">
+            Bulk Upload <span className="text-primary">Candidates</span>
           </h1>
-          <p className="text-gray-400">
+          <p className="text-gray-400 text-lg">
             Upload multiple candidates at once using CSV or Excel files
           </p>
         </div>
 
         {/* Upload Section */}
-        <div className="bg-gray-800/50 backdrop-blur-lg rounded-2xl p-8 mb-6 border border-purple-500/20">
+        <div className="bg-surface backdrop-blur-lg rounded-2xl p-8 mb-6 border border-gray-800">
           {/* Template Download */}
           <div className="mb-6">
             <button
               onClick={downloadTemplate}
-              className="flex items-center gap-2 text-purple-400 hover:text-purple-300 transition-colors"
+              className="flex items-center gap-2 text-primary hover:text-white transition-colors"
             >
               <FileSpreadsheet className="w-5 h-5" />
               <span>Download CSV Template</span>
@@ -144,12 +144,12 @@ const BulkUpload = () => {
           {/* Job Selection */}
           <div className="mb-6">
             <label className="block text-gray-300 mb-2 font-medium">
-              Select Job <span className="text-red-400">*</span>
+              Select Job <span className="text-primary">*</span>
             </label>
             <select
               value={jobId}
               onChange={(e) => setJobId(e.target.value)}
-              className="w-full bg-gray-700/50 border border-purple-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-500 transition-colors"
+              className="w-full bg-dark border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary transition-colors"
             >
               <option value="">Choose a job...</option>
               {jobs.map((job) => (
@@ -163,7 +163,7 @@ const BulkUpload = () => {
           {/* File Upload */}
           <div className="mb-6">
             <label className="block text-gray-300 mb-2 font-medium">
-              Upload CSV/Excel File <span className="text-red-400">*</span>
+              Upload CSV/Excel File <span className="text-primary">*</span>
             </label>
             <div className="relative">
               <input
@@ -175,9 +175,9 @@ const BulkUpload = () => {
               />
               <label
                 htmlFor="file-upload"
-                className="flex items-center justify-center gap-3 w-full bg-gray-700/30 border-2 border-dashed border-purple-500/50 rounded-lg p-8 cursor-pointer hover:border-purple-500 hover:bg-gray-700/50 transition-all"
+                className="flex items-center justify-center gap-3 w-full bg-dark border-2 border-dashed border-gray-700 hover:border-primary rounded-lg p-8 cursor-pointer transition-all"
               >
-                <Upload className="w-8 h-8 text-purple-400" />
+                <Upload className="w-8 h-8 text-primary" />
                 <div className="text-center">
                   <p className="text-white font-medium">
                     {file ? file.name : 'Click to upload or drag and drop'}
@@ -202,7 +202,7 @@ const BulkUpload = () => {
           <button
             onClick={handleUpload}
             disabled={!file || !jobId || uploading}
-            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 disabled:from-gray-600 disabled:to-gray-600 disabled:cursor-not-allowed text-white font-bold py-4 px-6 rounded-lg transition-all flex items-center justify-center gap-2"
+            className="w-full bg-primary hover:bg-white text-dark font-bold py-4 px-6 rounded-lg transition-all disabled:bg-gray-700 disabled:text-gray-500 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {uploading ? (
               <>
@@ -220,27 +220,27 @@ const BulkUpload = () => {
 
         {/* Results Section */}
         {results && (
-          <div className="bg-gray-800/50 backdrop-blur-lg rounded-2xl p-8 border border-purple-500/20">
+          <div className="bg-surface backdrop-blur-lg rounded-2xl p-8 border border-gray-800">
             {/* Summary */}
             <div className="mb-6">
               <h2 className="text-2xl font-bold text-white mb-4">Upload Results</h2>
               
               <div className="grid grid-cols-3 gap-4 mb-6">
-                <div className="bg-gray-700/50 rounded-lg p-4">
+                <div className="bg-dark rounded-lg p-4 border border-gray-800">
                   <p className="text-gray-400 text-sm">Total Rows</p>
                   <p className="text-2xl font-bold text-white">
                     {results.summary.total_rows}
                   </p>
                 </div>
                 
-                <div className="bg-green-500/10 rounded-lg p-4">
+                <div className="bg-primary/10 border border-primary/30 rounded-lg p-4">
                   <p className="text-gray-400 text-sm">Successful</p>
-                  <p className="text-2xl font-bold text-green-400">
+                  <p className="text-2xl font-bold text-primary">
                     {results.summary.successful}
                   </p>
                 </div>
                 
-                <div className="bg-red-500/10 rounded-lg p-4">
+                <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4">
                   <p className="text-gray-400 text-sm">Failed</p>
                   <p className="text-2xl font-bold text-red-400">
                     {results.summary.failed}
@@ -248,8 +248,8 @@ const BulkUpload = () => {
                 </div>
               </div>
 
-              <div className="bg-purple-500/10 rounded-lg p-4">
-                <p className="text-purple-300 font-medium">
+              <div className="bg-primary/10 border border-primary/30 rounded-lg p-4">
+                <p className="text-primary font-medium">
                   Success Rate: {results.summary.success_rate}
                 </p>
               </div>
@@ -263,7 +263,7 @@ const BulkUpload = () => {
                 {results.results.map((result, index) => (
                   <div
                     key={index}
-                    className="bg-gray-700/30 rounded-lg p-4 flex items-center justify-between"
+                    className="bg-dark rounded-lg p-4 flex items-center justify-between border border-gray-800 hover:border-gray-700 transition-colors"
                   >
                     <div className="flex items-center gap-3">
                       {getStatusIcon(result.status)}
@@ -283,9 +283,9 @@ const BulkUpload = () => {
                     </div>
                     
                     <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                      result.status === 'success' ? 'bg-green-500/20 text-green-300' :
-                      result.status === 'failed' ? 'bg-red-500/20 text-red-300' :
-                      'bg-yellow-500/20 text-yellow-300'
+                      result.status === 'success' ? 'bg-primary/20 text-primary border border-primary/30' :
+                      result.status === 'failed' ? 'bg-red-500/20 text-red-300 border border-red-500/30' :
+                      'bg-yellow-500/20 text-yellow-300 border border-yellow-500/30'
                     }`}>
                       {result.status}
                     </span>
@@ -301,3 +301,4 @@ const BulkUpload = () => {
 };
 
 export default BulkUpload;
+

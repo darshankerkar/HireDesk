@@ -34,6 +34,7 @@ export default function Navbar() {
             <div className="hidden sm:flex sm:space-x-8">
               <NavLink to="/" current={location.pathname}>Home</NavLink>
               <NavLink to="/upload-resume" current={location.pathname}>Upload Resume</NavLink>
+              <NavLink to="/bulk-upload" current={location.pathname}>Bulk Upload</NavLink>
               <NavLink to="/jobs" current={location.pathname}>Jobs</NavLink>
               <NavLink to="/dashboard" current={location.pathname}>Dashboard</NavLink>
             </div>
@@ -117,6 +118,9 @@ export default function Navbar() {
                 </MobileNavLink>
                 <MobileNavLink to="/upload-resume" current={location.pathname} onClick={handleNavClick}>
                   Upload Resume
+                </MobileNavLink>
+                <MobileNavLink to="/bulk-upload" current={location.pathname} onClick={handleNavClick}>
+                  Bulk Upload
                 </MobileNavLink>
                 <MobileNavLink to="/jobs" current={location.pathname} onClick={handleNavClick}>
                   Jobs

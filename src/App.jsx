@@ -4,6 +4,7 @@ import Home from './pages/Home';
 import Dashboard from './pages/Dashboard';
 import Jobs from './pages/Jobs';
 import UploadResume from './pages/UploadResume';
+import BulkUpload from './pages/BulkUpload';
 import { AuthProvider } from './contexts/AuthContext';
 
 function App() {
@@ -18,6 +19,7 @@ function App() {
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/jobs" element={<Jobs />} />
               <Route path="/upload-resume" element={<UploadResume />} />
+              <Route path="/bulk-upload" element={<BulkUpload />} />
             </Routes>
           </main>
         </div>

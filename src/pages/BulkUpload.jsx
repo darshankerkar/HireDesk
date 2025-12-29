@@ -234,77 +234,50 @@ const BulkUpload = () => {
             <div className="container mx-auto px-6">
               <div className="max-w-4xl mx-auto">
                 <div className="bg-surface backdrop-blur-lg rounded-3xl p-12 border border-gray-800">
-                  {/* Summary */}
-                  <div className="mb-12">
-                    <h2 className="text-3xl font-display font-bold text-white mb-8">Upload Results</h2>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                      <div className="bg-dark rounded-2xl p-6 border border-gray-800">
-                        <p className="text-gray-400 mb-2">Total Rows</p>
-                        <p className="text-4xl font-bold text-white">
-                          {results.summary.total_rows}
-                        </p>
-                      </div>
-                      
-                      <div className="bg-primary/10 border border-primary/30 rounded-2xl p-6">
-                        <p className="text-gray-400 mb-2">Successful</p>
-                        <p className="text-4xl font-bold text-primary">
-                          {results.summary.successful}
-                        </p>
-                      </div>
-                      
-                      <div className="bg-red-500/10 border border-red-500/30 rounded-2xl p-6">
-                        <p className="text-gray-400 mb-2">Failed</p>
-                        <p className="text-4xl font-bold text-red-400">
-                          {results.summary.failed}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="bg-primary/10 border border-primary/30 rounded-2xl p-6">
-                      <p className="text-primary font-medium text-lg">
-                        Success Rate: {results.summary.success_rate}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Detailed Results */}
-                  <div>
-                    <h3 className="text-2xl font-bold text-white mb-6">Row-by-Row Results</h3>
-                    
-                    <div className="space-y-3 max-h-96 overflow-y-auto">
-                      {results.results.map((result, index) => (
-                        <div
-                          key={index}
-                          className="bg-dark rounded-xl p-6 flex items-center justify-between border border-gray-800 hover:border-gray-700 transition-colors"
-                        >
+                  <h2 className="text-3xl font-display font-bold text-white mb-8">
+                    Candidate Scores
+                  </h2>
+                  
+                  {/* Candidate List */}
+                  <div className="space-y-4">
+                    {results.results.map((result, index) => (
+                      <div
+                        key={index}
+                        className={`bg-dark rounded-2xl p-6 border ${
+                          result.status === 'success' 
+                            ? 'border-primary/30 hover:border-primary/50' 
+                            : 'border-red-500/30'
+                        } transition-all`}
+                      >
+                        <div className="flex items-center justify-between">
                           <div className="flex items-center gap-4">
-                            {getStatusIcon(result.status)}
+                            {result.status === 'success' ? (
+                              <CheckCircle className="w-6 h-6 text-primary flex-shrink-0" />
+                            ) : (
+                              <XCircle className="w-6 h-6 text-red-500 flex-shrink-0" />
+                            )}
+                            
                             <div>
-                              <p className="text-white font-medium text-lg">
-                                Row {result.row}: {result.name || 'Unknown'}
-                              </p>
-                              {result.status === 'success' && (
-                                <p className="text-gray-400 mt-1">
-                                  Score: {result.score} | ID: {result.candidate_id}
-                                </p>
-                              )}
+                              <h3 className="text-xl font-bold text-white">
+                                {result.name || 'Unknown'}
+                              </h3>
                               {result.error && (
-                                <p className="text-red-300 mt-1">{result.error}</p>
+                                <p className="text-red-300 text-sm mt-1">{result.error}</p>
                               )}
                             </div>
                           </div>
                           
-                          <span className={`px-4 py-2 rounded-full text-sm font-medium ${
-                            result.status === 'success' ? 'bg-primary/20 text-primary border border-primary/30' :
-                            result.status === 'failed' ? 'bg-red-500/20 text-red-300 border border-red-500/30' :
-                            'bg-yellow-500/20 text-yellow-300 border border-yellow-500/30'
-                          }`}>
-                            {result.status}
-                          </span>
+                          {result.status === 'success' && (
+                            <div className="text-right">
+                              <p className="text-gray-400 text-sm mb-1">Resume Score</p>
+                              <p className="text-4xl font-bold text-primary">
+                                {result.score || 0}%
+                              </p>
+                            </div>
+                          )}
                         </div>
-                      ))}
-                    </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>

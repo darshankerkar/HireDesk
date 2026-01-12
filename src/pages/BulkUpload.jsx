@@ -89,7 +89,9 @@ const BulkUpload = () => {
   };
 
   const downloadTemplate = () => {
-    const csvContent = 'name,email,phone,resume_source\nJohn Doe,john@email.com,+1234567890,https://drive.google.com/file/d/xxx\nJane Smith,jane@email.com,+0987654321,/path/to/resume.pdf';
+    const csvContent = `name,email,phone,resume_source
+John Doe,john@email.com,+1234567890,https://example.com/resume1.pdf
+Jane Smith,jane@email.com,+0987654321,https://example.com/resume2.pdf`;
     
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);

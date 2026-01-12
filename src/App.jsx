@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
+import ChatBot from './components/ChatBot';
 import Home from './pages/Home';
 import Dashboard from './pages/Dashboard';
 import Jobs from './pages/Jobs';
@@ -22,6 +23,7 @@ function App() {
               <Route path="/bulk-upload" element={<BulkUpload />} />
             </Routes>
           </main>
+          <ChatBot />
         </div>
       </Router>
     </AuthProvider>

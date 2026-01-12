@@ -93,6 +93,72 @@ export default function ChatBot() {
         }
     };
 
+    // Format message content with markdown-like formatting
+    const formatMessageContent = (content) => {
+        // Split by line breaks
+        const lines = content.split('\n');
+
+        return lines.map((line, index) => {
+            // Skip empty lines but preserve spacing
+            if (line.trim() === '') {
+                return <div key={index} className="h-2" />;
+            }
+
+            // Format the line
+            let formattedLine = line;
+
+            // Convert **bold** to <strong>
+            const boldRegex = /\*\*(.*?)\*\*/g;
+            const parts = [];
+            let lastIndex = 0;
+            let match;
+
+            while ((match = boldRegex.exec(formattedLine)) !== null) {
+                // Add text before bold
+                if (match.index > lastIndex) {
+                    parts.push(formattedLine.substring(lastIndex, match.index));
+                }
+                // Add bold text
+                parts.push(<strong key={`bold-${index}-${match.index}`} className="font-bold text-white">{match[1]}</strong>);
+                lastIndex = match.index + match[0].length;
+            }
+            // Add remaining text
+            if (lastIndex < formattedLine.length) {
+                parts.push(formattedLine.substring(lastIndex));
+            }
+
+            // Check for bullet points (*, -, •)
+            const bulletMatch = line.match(/^[\s]*[*\-•]\s+(.+)$/);
+            if (bulletMatch) {
+                return (
+                    <div key={index} className="flex gap-2 mb-1">
+                        <span className="text-primary">•</span>
+                        <span className="flex-1">{parts.length > 0 ? parts : bulletMatch[1]}</span>
+                    </div>
+                );
+            }
+
+            // Check for numbered lists (1., 2., etc.)
+            const numberedMatch = line.match(/^[\s]*(\d+)\.\s+(.+)$/);
+            if (numberedMatch) {
+                return (
+                    <div key={index} className="flex gap-2 mb-1">
+                        <span className="text-primary font-medium">{numberedMatch[1]}.</span>
+                        <span className="flex-1">{parts.length > 0 ? parts : numberedMatch[2]}</span>
+                    </div>
+                );
+            }
+
+            // Regular paragraph
+            return (
+                <p key={index} className="mb-2 last:mb-0 leading-relaxed">
+                    {parts.length > 0 ? parts : formattedLine}
+                </p>
+            );
+        });
+    };
+
+
     return (
         <>
             {/* Floating Chat Button */}
@@ -154,11 +220,17 @@ export default function ChatBot() {
                                 >
                                     <div
                                         className={`max-w-[80%] p-3 rounded-2xl ${message.role === 'user'
-                                                ? 'bg-gradient-to-r from-primary to-lime-400 text-dark font-medium'
-                                                : 'bg-dark border border-gray-800 text-gray-200'
+                                            ? 'bg-gradient-to-r from-primary to-lime-400 text-dark font-medium'
+                                            : 'bg-dark border border-gray-800 text-gray-200'
                                             }`}
                                     >
-                                        {message.content}
+                                        {message.role === 'user' ? (
+                                            message.content
+                                        ) : (
+                                            <div className="space-y-1">
+                                                {formatMessageContent(message.content)}
+                                            </div>
+                                        )}
                                     </div>
                                 </motion.div>
                             ))}

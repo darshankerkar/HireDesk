@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import ChatBot from './components/ChatBot';
+import ProtectedRoute from './components/ProtectedRoute';
 import Home from './pages/Home';
 import Dashboard from './pages/Dashboard';
 import Jobs from './pages/Jobs';
@@ -17,10 +18,26 @@ function App() {
           <main className="pt-20">
             <Routes>
               <Route path="/" element={<Home />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/jobs" element={<Jobs />} />
-              <Route path="/upload-resume" element={<UploadResume />} />
-              <Route path="/bulk-upload" element={<BulkUpload />} />
+              <Route path="/dashboard" element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              } />
+              <Route path="/jobs" element={
+                <ProtectedRoute>
+                  <Jobs />
+                </ProtectedRoute>
+              } />
+              <Route path="/upload-resume" element={
+                <ProtectedRoute>
+                  <UploadResume />
+                </ProtectedRoute>
+              } />
+              <Route path="/bulk-upload" element={
+                <ProtectedRoute>
+                  <BulkUpload />
+                </ProtectedRoute>
+              } />
             </Routes>
           </main>
           <ChatBot />

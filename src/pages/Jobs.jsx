@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Briefcase, Users, ChevronRight, ChevronDown, Download, Edit2, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../utils/api';
+import { useAuth } from '../contexts/AuthContext';
 import AddJobModal from '../components/AddJobModal';
 import EditJobModal from '../components/EditJobModal';
 import CandidateProfileModal from '../components/CandidateProfileModal';
 
 export default function Jobs() {
+  const { currentUser } = useAuth();
   const [jobs, setJobs] = useState([]);
   const [selectedJobId, setSelectedJobId] = useState(null);
   const [candidates, setCandidates] = useState([]);
@@ -18,13 +20,19 @@ export default function Jobs() {
   const [profileModalOpen, setProfileModalOpen] = useState(false);
 
   useEffect(() => {
-    fetchJobs();
-  }, []);
+    if (currentUser) {
+      fetchJobs();
+    }
+  }, [currentUser]);
 
   const fetchJobs = async () => {
     try {
+      // Filter jobs by current user's email on the frontend
       const response = await api.get('/recruitment/jobs/');
-      setJobs(response.data);
+      const userJobs = response.data.filter(job => 
+        job.posted_by_email === currentUser?.email
+      );
+      setJobs(userJobs);
     } catch (error) {
       console.error('Error fetching jobs:', error);
     }

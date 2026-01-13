@@ -2,8 +2,10 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Briefcase, FileText } from 'lucide-react';
 import api from '../utils/api';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function AddJobModal({ isOpen, onClose, onJobAdded }) {
+  const { currentUser } = useAuth();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [requirements, setRequirements] = useState('');
@@ -19,7 +21,8 @@ export default function AddJobModal({ isOpen, onClose, onJobAdded }) {
       const response = await api.post('/recruitment/jobs/', {
         title,
         description,
-        requirements
+        requirements,
+        posted_by_email: currentUser?.email  // Add user email to track ownership
       });
       
       onJobAdded(response.data);

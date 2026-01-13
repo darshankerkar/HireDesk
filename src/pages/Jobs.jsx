@@ -29,8 +29,12 @@ export default function Jobs() {
     try {
       // Filter jobs by current user's email on the frontend
       const response = await api.get('/recruitment/jobs/');
+      
+      // Show jobs that:
+      // 1. Have posted_by_email matching current user (new jobs)
+      // 2. Have posted_by_email as null/empty (legacy jobs before migration)
       const userJobs = response.data.filter(job => 
-        job.posted_by_email === currentUser?.email
+        !job.posted_by_email || job.posted_by_email === currentUser?.email
       );
       setJobs(userJobs);
     } catch (error) {

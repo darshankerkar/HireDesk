@@ -54,11 +54,10 @@ export default function Dashboard() {
         api.get('/recruitment/candidates/')
       ]);
 
-      // Filter jobs by current user's email
-      // Include jobs with null email (legacy) or matching email (new)
+      // Strict filtering: Only show jobs posted by current user
       const allJobs = jobsRes.data;
       const userJobs = allJobs.filter(job => 
-        !job.posted_by_email || job.posted_by_email === currentUser?.email
+        job.posted_by_email === currentUser?.email
       );
       
       // Get candidates only for user's jobs

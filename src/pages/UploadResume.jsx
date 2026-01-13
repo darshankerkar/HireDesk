@@ -2,9 +2,11 @@ import { useState, useEffect, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { motion } from 'framer-motion';
 import { Upload, FileText, CheckCircle, AlertCircle, Briefcase } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 import api from '../utils/api';
 
 export default function UploadResume() {
+  const { currentUser } = useAuth();
   const [jobs, setJobs] = useState([]);
   const [selectedJob, setSelectedJob] = useState('');
   const [uploading, setUploading] = useState(false);
@@ -12,13 +14,19 @@ export default function UploadResume() {
   const [uploadedFile, setUploadedFile] = useState(null);
 
   useEffect(() => {
-    fetchJobs();
-  }, []);
+    if (currentUser) {
+      fetchJobs();
+    }
+  }, [currentUser]);
 
   const fetchJobs = async () => {
     try {
       const response = await api.get('/recruitment/jobs/');
-      setJobs(response.data);
+      // Filter jobs by current user's email
+      const userJobs = response.data.filter(job => 
+        job.posted_by_email === currentUser?.email
+      );
+      setJobs(userJobs);
     } catch (error) {
       console.error('Error fetching jobs:', error);
     }

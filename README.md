@@ -95,5 +95,4 @@ Contributions are welcome! Follow these steps to contribute:
 ---
 
 ## 🔗 Live Preview
-
-[ View Live Project](https://hiredesk.vercel.app)
+https://hire-desk.vercel.app

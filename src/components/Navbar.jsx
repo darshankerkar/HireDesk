@@ -44,9 +44,9 @@ export default function Navbar() {
             {/* Desktop Navigation */}
             <div className="hidden sm:flex sm:space-x-8">
               <NavLink to="/" current={location.pathname}>Home</NavLink>
-              {/* Candidate-only routes */}
-              {!isRecruiter && <NavLink to="/upload-resume" current={location.pathname}>Upload Resume</NavLink>}
-              {/* Recruiter-only routes */}
+              {/* Upload Resume - Available for everyone */}
+              <NavLink to="/upload-resume" current={location.pathname}>Upload Resume</NavLink>
+              {/* Bulk Upload - Recruiter only */}
               {isRecruiter && isPaid && <NavLink to="/bulk-upload" current={location.pathname}>Bulk Upload</NavLink>}
               {/* Shared routes */}
               <NavLink to="/jobs" current={location.pathname}>Jobs</NavLink>
@@ -130,13 +130,11 @@ export default function Navbar() {
                 <MobileNavLink to="/" current={location.pathname} onClick={handleNavClick}>
                   Home
                 </MobileNavLink>
-                {/* Candidate-only routes */}
-                {!isRecruiter && (
-                  <MobileNavLink to="/upload-resume" current={location.pathname} onClick={handleNavClick}>
-                    Upload Resume
-                  </MobileNavLink>
-                )}
-                {/* Recruiter-only routes */}
+                {/* Upload Resume - Available for everyone */}
+                <MobileNavLink to="/upload-resume" current={location.pathname} onClick={handleNavClick}>
+                  Upload Resume
+                </MobileNavLink>
+                {/* Bulk Upload - Recruiter only */}
                 {isRecruiter && isPaid && (
                   <MobileNavLink to="/bulk-upload" current={location.pathname} onClick={handleNavClick}>
                     Bulk Upload

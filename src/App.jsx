@@ -117,15 +117,11 @@ function AppContent() {
             )
           } />
 
-          {/* Upload Resume - Candidates only */}
+          {/* Upload Resume - Available to everyone */}
           <Route path="/upload-resume" element={
-            !isRecruiter ? (
-              <ProtectedRoute>
-                <UploadResume />
-              </ProtectedRoute>
-            ) : (
-              <Navigate to={defaultDashboard} replace />
-            )
+            <ProtectedRoute>
+              <UploadResume />
+            </ProtectedRoute>
           } />
 
           {/* Shared Routes */}

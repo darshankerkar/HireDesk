@@ -54,6 +54,8 @@ export default function Navbar() {
                   <NavLink to="/jobs" current={location.pathname}>Jobs</NavLink>
                 </>
               )}
+              {/* Resume Analyzer - Available to all */}
+              <NavLink to="/resume-analyzer" current={location.pathname}>Resume Analyzer</NavLink>
               {/* Dashboard */}
               <NavLink to={isRecruiter && isPaid ? "/recruiter-dashboard" : "/candidate-dashboard"} current={location.pathname}>Dashboard</NavLink>
             </div>
@@ -82,7 +84,7 @@ export default function Navbar() {
                     onClick={() => setSignUpModalOpen(true)}
                     className="px-5 py-2 rounded-full bg-primary text-dark text-sm font-medium hover:bg-white transition-colors duration-300"
                   >
-                    Sign Up 
+                    Sign Up
                   </button>
                 </>
               )}
@@ -155,6 +157,10 @@ export default function Navbar() {
                     </MobileNavLink>
                   </>
                 )}
+                {/* Resume Analyzer - Available to all */}
+                <MobileNavLink to="/resume-analyzer" current={location.pathname} onClick={handleNavClick}>
+                  Resume Analyzer
+                </MobileNavLink>
                 {/* Dashboard */}
                 <MobileNavLink to={isRecruiter && isPaid ? "/recruiter-dashboard" : "/candidate-dashboard"} current={location.pathname} onClick={handleNavClick}>
                   Dashboard
@@ -208,7 +214,7 @@ export default function Navbar() {
         isOpen={loginModalOpen}
         onClose={() => setLoginModalOpen(false)}
       />
-      
+
       <SignUpModal
         isOpen={signUpModalOpen}
         onClose={() => setSignUpModalOpen(false)}
@@ -220,13 +226,13 @@ export default function Navbar() {
 function NavLink({ to, children, current }) {
   const isActive = current === to;
   return (
-    <Link 
-      to={to} 
+    <Link
+      to={to}
       className={`relative px-1 pt-1 text-sm font-medium transition-colors duration-300 ${isActive ? 'text-primary' : 'text-gray-400 hover:text-white'}`}
     >
       {children}
       {isActive && (
-        <motion.div 
+        <motion.div
           layoutId="underline"
           className="absolute left-0 right-0 bottom-0 h-0.5 bg-primary"
         />
@@ -241,11 +247,10 @@ function MobileNavLink({ to, children, current, onClick }) {
     <Link
       to={to}
       onClick={onClick}
-      className={`block px-3 py-3 rounded-lg text-base font-medium transition-colors duration-300 ${
-        isActive 
-          ? 'bg-primary text-dark' 
-          : 'text-gray-400 hover:text-white hover:bg-surface'
-      }`}
+      className={`block px-3 py-3 rounded-lg text-base font-medium transition-colors duration-300 ${isActive
+        ? 'bg-primary text-dark'
+        : 'text-gray-400 hover:text-white hover:bg-surface'
+        }`}
     >
       {children}
     </Link>

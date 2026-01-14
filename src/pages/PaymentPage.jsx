@@ -60,7 +60,7 @@ export default function PaymentPage() {
 
       // Call backend payment endpoint
       const response = await axios.post(
-        `${config.apiUrl}/auth/payment/`,
+        `${config.apiUrl}/api/auth/payment/`,
         { plan: selectedPlan },
         {
           headers: {

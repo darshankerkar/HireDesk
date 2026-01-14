@@ -23,7 +23,7 @@ export default function LoginModal({ isOpen, onClose, preselectedRole = null }) 
       
       // Get Django JWT token
       try {
-        const response = await axios.post(`${config.apiUrl}/auth/token/`, {
+        const response = await axios.post(`${config.apiUrl}/api/auth/token/`, {
           username: email.split('@')[0],
           password: password
         });

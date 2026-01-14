@@ -47,7 +47,7 @@ export default function SignUpModal({ isOpen, onClose, preselectedRole = null })
           company_name: isRecruiter ? companyName : ''
         };
 
-        const response = await axios.post(`${config.apiUrl}/auth/register/`, backendData);
+        const response = await axios.post(`${config.apiUrl}/api/auth/register/`, backendData);
         
         // Store user data including role for routing
         const userData = {

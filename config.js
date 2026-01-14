@@ -21,4 +21,12 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
 export const auth = getAuth(app);
-export default app;
+
+// Backend API URL
+const config = {
+  apiUrl: import.meta.env.PROD 
+    ? 'https://hiredesk-backend.onrender.com'
+    : 'http://localhost:8000'
+};
+
+export default config;

@@ -27,12 +27,20 @@ export default function Jobs() {
 
   const fetchJobs = async () => {
     try {
-      // Strict filtering: Only show jobs posted by current user
       const response = await api.get('/recruitment/jobs/');
-      const userJobs = response.data.filter(job => 
-        job.posted_by_email === currentUser?.email
-      );
-      setJobs(userJobs);
+      const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+      const isRecruiter = userData.role === 'RECRUITER';
+      
+      if (isRecruiter) {
+        // Recruiters only see their own jobs
+        const userJobs = response.data.filter(job => 
+          job.posted_by_email === currentUser?.email
+        );
+        setJobs(userJobs);
+      } else {
+        // Candidates see ALL jobs
+        setJobs(response.data);
+      }
     } catch (error) {
       console.error('Error fetching jobs:', error);
     }

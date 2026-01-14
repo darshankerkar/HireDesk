@@ -126,9 +126,12 @@ export default function ResumeAnalyzer() {
                 resumeText = await extractTextFromFile(selectedFile);
             }
 
+            // Truncate resume text to avoid 413 error (max 10000 chars)
+            const truncatedText = resumeText.substring(0, 10000);
+            
             // Call the serverless function instead of Gemini directly
             const response = await axios.post('/api/resume-analyzer', {
-                resumeText: resumeText
+                resumeText: truncatedText
             });
 
             if (response.data.success) {

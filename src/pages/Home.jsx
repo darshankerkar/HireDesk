@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight, CheckCircle, Upload, Cpu, ShieldCheck, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -19,6 +19,19 @@ const staggerContainer = {
 };
 
 export default function Home() {
+  const [userData, setUserData] = useState(null);
+
+  useEffect(() => {
+    const storedUserData = localStorage.getItem('userData');
+    if (storedUserData) {
+      setUserData(JSON.parse(storedUserData));
+    }
+  }, []);
+
+  const isRecruiter = userData?.role === 'RECRUITER';
+  const isPaid = userData?.is_paid;
+  const dashboardUrl = (isRecruiter && isPaid) ? '/recruiter-dashboard' : '/candidate-dashboard';
+
   return (
     <div className="bg-dark min-h-screen text-secondary overflow-hidden">
       {/* Hero Section */}
@@ -47,7 +60,7 @@ export default function Home() {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.8, duration: 0.5 }}
           >
-            <Link to="/dashboard" className="inline-flex items-center px-8 py-4 bg-primary text-dark font-bold text-lg rounded-full hover:bg-white transition-colors duration-300">
+            <Link to={dashboardUrl} className="inline-flex items-center px-8 py-4 bg-primary text-dark font-bold text-lg rounded-full hover:bg-white transition-colors duration-300">
               Launch Dashboard <ArrowRight className="ml-2 h-5 w-5" />
             </Link>
           </motion.div>

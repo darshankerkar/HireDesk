@@ -69,59 +69,74 @@ function AppContent() {
       <Navbar />
       <main className="pt-20">
         <Routes>
-          <Route path="/" element={<Navigate to={defaultDashboard} replace />} />
+          {/* Home Page */}
+          <Route path="/" element={<Home />} />
+          <Route path="/home" element={<Home />} />
           
-          {/* Recruiter Routes - Only for paid recruiters */}
-          {isRecruiter && isPaid && (
-            <>
-              <Route path="/recruiter-dashboard" element={
-                <ProtectedRoute>
-                  <RecruiterDashboard />
-                </ProtectedRoute>
-              } />
-              <Route path="/bulk-upload" element={
-                <ProtectedRoute>
-                  <BulkUpload />
-                </ProtectedRoute>
-              } />
-              <Route path="/dashboard" element={
-                <ProtectedRoute>
-                  <Dashboard />
-                </ProtectedRoute>
-              } />
-            </>
-          )}
+          {/* Recruiter Dashboard */}
+          <Route path="/recruiter-dashboard" element={
+            isRecruiter && isPaid ? (
+              <ProtectedRoute>
+                <RecruiterDashboard />
+              </ProtectedRoute>
+            ) : (
+              <Navigate to={defaultDashboard} replace />
+            )
+          } />
 
-          {/* Candidate Routes - Only for candidates */}
-          {!isRecruiter && (
-            <>
-              <Route path="/candidate-dashboard" element={
-                <ProtectedRoute>
-                  <CandidateDashboard />
-                </ProtectedRoute>
-              } />
-              <Route path="/upload-resume" element={
-                <ProtectedRoute>
-                  <UploadResume />
-                </ProtectedRoute>
-              } />
-            </>
-          )}
+          {/* Candidate Dashboard */}
+          <Route path="/candidate-dashboard" element={
+            !isRecruiter ? (
+              <ProtectedRoute>
+                <CandidateDashboard />
+              </ProtectedRoute>
+            ) : (
+              <Navigate to={defaultDashboard} replace />
+            )
+          } />
 
-          {/* Shared Routes - Available to both roles */}
+          {/* Bulk Upload - Recruiters only */}
+          <Route path="/bulk-upload" element={
+            isRecruiter && isPaid ? (
+              <ProtectedRoute>
+                <BulkUpload />
+              </ProtectedRoute>
+            ) : (
+              <Navigate to={defaultDashboard} replace />
+            )
+          } />
+
+          {/* Old Dashboard route redirect */}
+          <Route path="/dashboard" element={
+            isRecruiter && isPaid ? (
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            ) : (
+              <Navigate to={defaultDashboard} replace />
+            )
+          } />
+
+          {/* Upload Resume - Candidates only */}
+          <Route path="/upload-resume" element={
+            !isRecruiter ? (
+              <ProtectedRoute>
+                <UploadResume />
+              </ProtectedRoute>
+            ) : (
+              <Navigate to={defaultDashboard} replace />
+            )
+          } />
+
+          {/* Shared Routes */}
           <Route path="/jobs" element={
             <ProtectedRoute>
               <Jobs />
             </ProtectedRoute>
           } />
-          <Route path="/home" element={
-            <ProtectedRoute>
-              <Home />
-            </ProtectedRoute>
-          } />
 
-          {/* Redirect invalid routes to default dashboard */}
-          <Route path="*" element={<Navigate to={defaultDashboard} replace />} />
+          {/* Redirect invalid routes to home */}
+          <Route path="*" element={<Navigate to="/home" replace />} />
         </Routes>
       </main>
       <ChatBot />

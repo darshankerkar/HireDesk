@@ -76,8 +76,9 @@ export default function PaymentPage() {
         userData.subscription_plan = selectedPlan;
         localStorage.setItem('userData', JSON.stringify(userData));
 
-        // Redirect to recruiter dashboard
-        navigate('/recruiter-dashboard');
+        // Force full page reload to update App.jsx state
+        alert('✅ Payment successful! Redirecting to dashboard...');
+        window.location.href = '/recruiter-dashboard';
       }
     } catch (err) {
       console.error('Payment error:', err);

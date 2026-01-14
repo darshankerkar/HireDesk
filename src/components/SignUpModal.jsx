@@ -47,15 +47,29 @@ export default function SignUpModal({ isOpen, onClose, preselectedRole = null })
           company_name: isRecruiter ? companyName : ''
         };
 
-        const response = await axios.post(`${config.apiUrl}/api/auth/register/`, backendData);
+        // Register user
+        await axios.post(`${config.apiUrl}/api/auth/register/`, backendData);
+        
+        // Now login to get JWT token
+        const loginResponse = await axios.post(`${config.apiUrl}/api/auth/token/`, {
+          username: username,
+          password: password
+        });
+
+        const { user, access, refresh } = loginResponse.data;
+        
+        // Store JWT tokens
+        localStorage.setItem('access_token', access);
+        localStorage.setItem('refresh_token', refresh);
         
         // Store user data including role for routing
         const userData = {
-          email: email,
-          role: preselectedRole || 'CANDIDATE',
-          is_recruiter: isRecruiter,
-          is_paid: false,
-          company_name: companyName
+          email: user.email,
+          role: user.role,
+          is_recruiter: user.is_recruiter,
+          is_paid: user.is_paid,
+          company_name: user.company_name,
+          subscription_plan: user.subscription_plan
         };
         localStorage.setItem('userData', JSON.stringify(userData));
         

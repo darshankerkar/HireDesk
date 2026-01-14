@@ -50,12 +50,11 @@ export default function PaymentPage() {
     setError('');
 
     try {
-      // Get the auth token from localStorage (Firebase ID token or JWT)
-      const firebaseUser = JSON.parse(localStorage.getItem('firebaseUser') || 'null');
-      const token = firebaseUser?.accessToken;
-
-      if (!token) {
-        throw new Error('Not authenticated');
+      // Get the Django JWT token from localStorage
+      const accessToken = localStorage.getItem('access_token');
+      
+      if (!accessToken) {
+        throw new Error('Not authenticated. Please login again.');
       }
 
       // Call backend payment endpoint
@@ -64,7 +63,7 @@ export default function PaymentPage() {
         { plan: selectedPlan },
         {
           headers: {
-            'Authorization': `Bearer ${token}`,
+            'Authorization': `Bearer ${accessToken}`,
             'Content-Type': 'application/json'
           }
         }
@@ -82,7 +81,7 @@ export default function PaymentPage() {
       }
     } catch (err) {
       console.error('Payment error:', err);
-      setError(err.response?.data?.error || 'Payment failed. Please try again.');
+      setError(err.response?.data?.error || err.message || 'Payment failed. Please try again.');
     } finally {
       setLoading(false);
     }

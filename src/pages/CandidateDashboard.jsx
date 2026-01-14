@@ -2,15 +2,18 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Briefcase, FileText, Search, TrendingUp, 
-  CheckCircle, Clock, Send, Award 
+  CheckCircle, Clock, Send, Award, Users, MapPin
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import config from '../../config';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function CandidateDashboard() {
   const navigate = useNavigate();
+  const { currentUser } = useAuth();
   const [jobs, setJobs] = useState([]);
+  const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     availableJobs: 0,
@@ -19,22 +22,38 @@ export default function CandidateDashboard() {
   });
 
   useEffect(() => {
-    fetchJobs();
-  }, []);
+    if (currentUser) {
+      fetchData();
+    }
+  }, [currentUser]);
 
-  const fetchJobs = async () => {
+  const fetchData = async () => {
     try {
-      const response = await axios.get(`${config.apiUrl}/api/jobs/`);
-      const jobsData = response.data;
-      setJobs(jobsData.slice(0, 5)); // Show latest 5 jobs
+      // Fetch all available jobs
+      const jobsResponse = await axios.get(`${config.apiUrl}/api/recruitment/jobs/`);
+      const allJobs = jobsResponse.data;
+      
+      // Fetch user's applications (candidates uploaded for jobs)
+      const candidatesResponse = await axios.get(`${config.apiUrl}/api/recruitment/candidates/`);
+      const userApplications = candidatesResponse.data.filter(
+        candidate => candidate.email === currentUser?.email
+      );
+
+      setJobs(allJobs);
+      setApplications(userApplications);
+
+      // Calculate stats
+      const avgScore = userApplications.length > 0
+        ? userApplications.reduce((sum, app) => sum + (app.score || 0), 0) / userApplications.length
+        : 0;
 
       setStats({
-        availableJobs: jobsData.length,
-        applicationsSubmitted: 0, // Would track from user's applications
-        avgMatchScore: 0 // Would calculate from user's applications
+        availableJobs: allJobs.length,
+        applicationsSubmitted: userApplications.length,
+        avgMatchScore: Math.round(avgScore)
       });
     } catch (error) {
-      console.error('Error fetching jobs:', error);
+      console.error('Error fetching data:', error);
     } finally {
       setLoading(false);
     }
@@ -69,7 +88,7 @@ export default function CandidateDashboard() {
       icon: Search,
       label: 'Browse Jobs',
       description: 'Find your next opportunity',
-      onClick: () => navigate('/jobs'),
+      onClick: () => navigate('/upload-resume'),
       color: 'bg-primary'
     },
     {
@@ -83,7 +102,7 @@ export default function CandidateDashboard() {
       icon: TrendingUp,
       label: 'View Activity',
       description: 'Track your applications',
-      onClick: () => navigate('/dashboard'),
+      onClick: () => navigate('/candidate-dashboard'),
       color: 'bg-purple-500'
     }
   ];
@@ -168,12 +187,6 @@ export default function CandidateDashboard() {
         >
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-white">Latest Job Openings</h2>
-            <button 
-              onClick={() => navigate('/jobs')}
-              className="text-primary hover:text-white transition-colors text-sm font-medium"
-            >
-              View All Jobs →
-            </button>
           </div>
 
           {jobs.length === 0 ? (
@@ -183,43 +196,54 @@ export default function CandidateDashboard() {
             </div>
           ) : (
             <div className="space-y-4">
-              {jobs.map((job) => (
-                <div
-                  key={job.id}
-                  className="p-4 bg-dark rounded-xl border border-gray-800 hover:border-primary/50 transition-all cursor-pointer"
-                  onClick={() => navigate('/jobs')}
-                >
-                  <div className="flex items-start justify-between mb-2">
-                    <div>
-                      <h3 className="font-bold text-white text-lg mb-1">{job.title}</h3>
-                      <p className="text-sm text-gray-400">{job.company || 'Company Name'}</p>
+              {jobs.map((job) => {
+                const hasApplied = applications.some(app => app.job === job.id);
+                return (
+                  <div
+                    key={job.id}
+                    className="p-4 bg-dark rounded-xl border border-gray-800 hover:border-primary/50 transition-all"
+                  >
+                    <div className="flex items-start justify-between mb-2">
+                      <div>
+                        <h3 className="font-bold text-white text-lg mb-1">{job.title}</h3>
+                        <p className="text-sm text-gray-400">{job.company || 'Company'}</p>
+                      </div>
+                      {hasApplied ? (
+                        <span className="px-3 py-1 bg-green-500/10 text-green-400 text-xs font-medium rounded-full">
+                          Applied
+                        </span>
+                      ) : (
+                        <span className="px-3 py-1 bg-primary/10 text-primary text-xs font-medium rounded-full">
+                          Open
+                        </span>
+                      )}
                     </div>
-                    <span className="px-3 py-1 bg-primary/10 text-primary text-xs font-medium rounded-full">
-                      Open
-                    </span>
-                  </div>
-                  
-                  <p className="text-gray-300 text-sm mb-3 line-clamp-2">
-                    {job.description}
-                  </p>
-                  
-                  <div className="flex items-center justify-between text-sm">
-                    <div className="flex items-center gap-4 text-gray-400">
-                      <span className="flex items-center gap-1">
-                        <Clock className="h-4 w-4" />
-                        Full-time
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Users className="h-4 w-4" />
-                        {job.candidates?.length || 0} Applicants
-                      </span>
+                    
+                    <p className="text-gray-300 text-sm mb-3 line-clamp-2">
+                      {job.description}
+                    </p>
+                    
+                    <div className="flex items-center justify-between text-sm">
+                      <div className="flex items-center gap-4 text-gray-400">
+                        <span className="flex items-center gap-1">
+                          <Clock className="h-4 w-4" />
+                          Full-time
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Users className="h-4 w-4" />
+                          {job.candidate_count || 0} Applicants
+                        </span>
+                      </div>
+                      <button 
+                        onClick={() => navigate('/upload-resume')}
+                        className="text-primary hover:text-white font-medium transition-colors"
+                      >
+                        {hasApplied ? 'View Application' : 'Apply Now'} →
+                      </button>
                     </div>
-                    <button className="text-primary hover:text-white font-medium transition-colors">
-                      Apply Now →
-                    </button>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </motion.div>

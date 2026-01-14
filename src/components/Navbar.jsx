@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import LoginModal from './LoginModal';
 import SignUpModal from './SignUpModal';
 import { useAuth } from '../contexts/AuthContext';
@@ -12,6 +12,17 @@ export default function Navbar() {
   const [signUpModalOpen, setSignUpModalOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { currentUser, logout } = useAuth();
+  const [userData, setUserData] = useState(null);
+
+  useEffect(() => {
+    const storedUserData = localStorage.getItem('userData');
+    if (storedUserData) {
+      setUserData(JSON.parse(storedUserData));
+    }
+  }, [currentUser]);
+
+  const isRecruiter = userData?.role === 'RECRUITER';
+  const isPaid = userData?.is_paid;
 
   // Close mobile menu when route changes
   const handleNavClick = () => {
@@ -33,10 +44,13 @@ export default function Navbar() {
             {/* Desktop Navigation */}
             <div className="hidden sm:flex sm:space-x-8">
               <NavLink to="/" current={location.pathname}>Home</NavLink>
-              <NavLink to="/upload-resume" current={location.pathname}>Upload Resume</NavLink>
-              <NavLink to="/bulk-upload" current={location.pathname}>Bulk Upload</NavLink>
+              {/* Candidate-only routes */}
+              {!isRecruiter && <NavLink to="/upload-resume" current={location.pathname}>Upload Resume</NavLink>}
+              {/* Recruiter-only routes */}
+              {isRecruiter && isPaid && <NavLink to="/bulk-upload" current={location.pathname}>Bulk Upload</NavLink>}
+              {/* Shared routes */}
               <NavLink to="/jobs" current={location.pathname}>Jobs</NavLink>
-              <NavLink to="/dashboard" current={location.pathname}>Dashboard</NavLink>
+              <NavLink to={isRecruiter && isPaid ? "/recruiter-dashboard" : "/candidate-dashboard"} current={location.pathname}>Dashboard</NavLink>
             </div>
 
             {/* Desktop Auth Buttons */}
@@ -116,16 +130,23 @@ export default function Navbar() {
                 <MobileNavLink to="/" current={location.pathname} onClick={handleNavClick}>
                   Home
                 </MobileNavLink>
-                <MobileNavLink to="/upload-resume" current={location.pathname} onClick={handleNavClick}>
-                  Upload Resume
-                </MobileNavLink>
-                <MobileNavLink to="/bulk-upload" current={location.pathname} onClick={handleNavClick}>
-                  Bulk Upload
-                </MobileNavLink>
+                {/* Candidate-only routes */}
+                {!isRecruiter && (
+                  <MobileNavLink to="/upload-resume" current={location.pathname} onClick={handleNavClick}>
+                    Upload Resume
+                  </MobileNavLink>
+                )}
+                {/* Recruiter-only routes */}
+                {isRecruiter && isPaid && (
+                  <MobileNavLink to="/bulk-upload" current={location.pathname} onClick={handleNavClick}>
+                    Bulk Upload
+                  </MobileNavLink>
+                )}
+                {/* Shared routes */}
                 <MobileNavLink to="/jobs" current={location.pathname} onClick={handleNavClick}>
                   Jobs
                 </MobileNavLink>
-                <MobileNavLink to="/dashboard" current={location.pathname} onClick={handleNavClick}>
+                <MobileNavLink to={isRecruiter && isPaid ? "/recruiter-dashboard" : "/candidate-dashboard"} current={location.pathname} onClick={handleNavClick}>
                   Dashboard
                 </MobileNavLink>
 

@@ -11,6 +11,7 @@ import PaymentPage from './pages/PaymentPage';
 import Jobs from './pages/Jobs';
 import UploadResume from './pages/UploadResume';
 import BulkUpload from './pages/BulkUpload';
+import ResumeAnalyzer from './pages/ResumeAnalyzer';
 import LandingPage from './pages/LandingPage';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 
@@ -75,7 +76,7 @@ function AppContent() {
           {/* Home Page */}
           <Route path="/" element={<Home />} />
           <Route path="/home" element={<Home />} />
-          
+
           {/* Recruiter Dashboard */}
           <Route path="/recruiter-dashboard" element={
             isRecruiter && isPaid ? (
@@ -124,6 +125,13 @@ function AppContent() {
           <Route path="/upload-resume" element={
             <ProtectedRoute>
               <UploadResume />
+            </ProtectedRoute>
+          } />
+
+          {/* Resume Analyzer - Available to everyone */}
+          <Route path="/resume-analyzer" element={
+            <ProtectedRoute>
+              <ResumeAnalyzer />
             </ProtectedRoute>
           } />
 

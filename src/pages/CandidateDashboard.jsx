@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Briefcase, FileText, Search, TrendingUp, 
-  CheckCircle, Clock, Send, Award, Users, MapPin
+  CheckCircle, Clock, Send, Award, Users, MapPin, X, AlertCircle
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -12,9 +12,13 @@ import { useAuth } from '../contexts/AuthContext';
 export default function CandidateDashboard() {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
+  const jobsRef = useRef(null);
   const [jobs, setJobs] = useState([]);
+  const [filteredJobs, setFilteredJobs] = useState([]);
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showActivityModal, setShowActivityModal] = useState(false);
   const [stats, setStats] = useState({
     availableJobs: 0,
     applicationsSubmitted: 0,
@@ -26,6 +30,19 @@ export default function CandidateDashboard() {
       fetchData();
     }
   }, [currentUser]);
+
+  useEffect(() => {
+    // Filter jobs based on search
+    if (searchQuery.trim() === '') {
+      setFilteredJobs(jobs);
+    } else {
+      const filtered = jobs.filter(job => 
+        job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        job.description.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      setFilteredJobs(filtered);
+    }
+  }, [searchQuery, jobs]);
 
   const fetchData = async () => {
     try {
@@ -40,6 +57,7 @@ export default function CandidateDashboard() {
       );
 
       setJobs(allJobs);
+      setFilteredJobs(allJobs);
       setApplications(userApplications);
 
       // Calculate stats
@@ -57,6 +75,17 @@ export default function CandidateDashboard() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const scrollToJobs = () => {
+    jobsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  const getApplicationStatus = (app) => {
+    const score = app.score || 0;
+    if (score >= 70) return { label: 'Selected', color: 'text-green-400', bg: 'bg-green-500/10', border: 'border-green-900' };
+    if (score >= 40) return { label: 'Under Review', color: 'text-yellow-400', bg: 'bg-yellow-500/10', border: 'border-yellow-900' };
+    return { label: 'Rejected', color: 'text-red-400', bg: 'bg-red-500/10', border: 'border-red-900' };
   };
 
   const statCards = [
@@ -178,8 +207,9 @@ export default function CandidateDashboard() {
           </div>
         </motion.div>
 
-        {/* Latest Jobs */}
+        {/* Latest Jobs with Search */}
         <motion.div
+          ref={jobsRef}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
@@ -189,14 +219,28 @@ export default function CandidateDashboard() {
             <h2 className="text-2xl font-bold text-white">Latest Job Openings</h2>
           </div>
 
-          {jobs.length === 0 ? (
+          {/* Search Bar */}
+          <div className="relative mb-6">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-500" />
+            <input
+              type="text"
+              placeholder="Search jobs by title or description..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 bg-dark border border-gray-800 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-primary transition-colors"
+            />
+          </div>
+
+          {filteredJobs.length === 0 ? (
             <div className="text-center py-12">
               <Briefcase className="h-12 w-12 text-gray-600 mx-auto mb-4" />
-              <p className="text-gray-400">No jobs available at the moment</p>
+              <p className="text-gray-400">
+                {searchQuery ? 'No jobs found matching your search' : 'No jobs available at the moment'}
+              </p>
             </div>
           ) : (
             <div className="space-y-4">
-              {jobs.map((job) => {
+              {filteredJobs.map((job) => {
                 const hasApplied = applications.some(app => app.job === job.id);
                 return (
                   <div
@@ -275,6 +319,83 @@ export default function CandidateDashboard() {
           </ul>
         </motion.div>
       </div>
+
+      {/* Activity Modal */}
+      <AnimatePresence>
+        {showActivityModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowActivityModal(false)}
+              className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative bg-surface border border-gray-800 rounded-2xl p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto"
+            >
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold text-white">Your Applications</h2>
+                <button
+                  onClick={() => setShowActivityModal(false)}
+                  className="p-2 hover:bg-dark rounded-lg transition-colors"
+                >
+                  <X className="h-5 w-5 text-gray-400" />
+                </button>
+              </div>
+
+              {applications.length === 0 ? (
+                <div className="text-center py-12">
+                  <Alert CircleClassName="h-12 w-12 text-gray-600 mx-auto mb-4" />
+                  <p className="text-gray-400">You haven't applied to any jobs yet</p>
+                  <button
+                    onClick={() => {
+                      setShowActivityModal(false);
+                      navigate('/upload-resume');
+                    }}
+                    className="mt-4 px-6 py-2 bg-primary text-dark rounded-lg hover:bg-white transition-colors"
+                  >
+                    Browse Jobs
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {applications.map((app, index) => {
+                    const status = getApplicationStatus(app);
+                    const jobTitle = jobs.find(j => j.id === app.job)?.title || 'Unknown Job';
+                    return (
+                      <motion.div
+                        key={app.id}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                        className="p-4 bg-dark rounded-xl border border-gray-800"
+                      >
+                        <div className="flex items-start justify-between mb-2">
+                          <div>
+                            <h3 className="font-bold text-white">{jobTitle}</h3>
+                            <p className="text-sm text-gray-400">Applied: {new Date(app.uploaded_at).toLocaleDateString()}</p>
+                          </div>
+                          <span className={`px-3 py-1 ${status.bg} ${status.color} ${status.border} text-xs font-medium rounded-full border`}>
+                            {status.label}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-gray-400">
+                          <Award className="h-4 w-4 text-primary" />
+                          <span>Match Score: {app.score?.toFixed(1) || 0}%</span>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              )}
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

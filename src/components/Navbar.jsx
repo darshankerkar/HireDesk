@@ -44,12 +44,17 @@ export default function Navbar() {
             {/* Desktop Navigation */}
             <div className="hidden sm:flex sm:space-x-8">
               <NavLink to="/" current={location.pathname}>Home</NavLink>
-              {/* Upload Resume - Available for everyone */}
-              <NavLink to="/upload-resume" current={location.pathname}>Upload Resume</NavLink>
-              {/* Bulk Upload - Recruiter only */}
-              {isRecruiter && isPaid && <NavLink to="/bulk-upload" current={location.pathname}>Bulk Upload</NavLink>}
-              {/* Shared routes */}
-              <NavLink to="/jobs" current={location.pathname}>Jobs</NavLink>
+              {/* Upload Resume - Candidates use this to apply */}
+              {!isRecruiter && <NavLink to="/upload-resume" current={location.pathname}>Upload Resume</NavLink>}
+              {/* Recruiter-only routes */}
+              {isRecruiter && isPaid && (
+                <>
+                  <NavLink to="/upload-resume" current={location.pathname}>Upload Resume</NavLink>
+                  <NavLink to="/bulk-upload" current={location.pathname}>Bulk Upload</NavLink>
+                  <NavLink to="/jobs" current={location.pathname}>Jobs</NavLink>
+                </>
+              )}
+              {/* Dashboard */}
               <NavLink to={isRecruiter && isPaid ? "/recruiter-dashboard" : "/candidate-dashboard"} current={location.pathname}>Dashboard</NavLink>
             </div>
 
@@ -130,20 +135,27 @@ export default function Navbar() {
                 <MobileNavLink to="/" current={location.pathname} onClick={handleNavClick}>
                   Home
                 </MobileNavLink>
-                {/* Upload Resume - Available for everyone */}
-                <MobileNavLink to="/upload-resume" current={location.pathname} onClick={handleNavClick}>
-                  Upload Resume
-                </MobileNavLink>
-                {/* Bulk Upload - Recruiter only */}
-                {isRecruiter && isPaid && (
-                  <MobileNavLink to="/bulk-upload" current={location.pathname} onClick={handleNavClick}>
-                    Bulk Upload
+                {/* Candidate - Upload Resume only */}
+                {!isRecruiter && (
+                  <MobileNavLink to="/upload-resume" current={location.pathname} onClick={handleNavClick}>
+                    Upload Resume
                   </MobileNavLink>
                 )}
-                {/* Shared routes */}
-                <MobileNavLink to="/jobs" current={location.pathname} onClick={handleNavClick}>
-                  Jobs
-                </MobileNavLink>
+                {/* Recruiter - All options */}
+                {isRecruiter && isPaid && (
+                  <>
+                    <MobileNavLink to="/upload-resume" current={location.pathname} onClick={handleNavClick}>
+                      Upload Resume
+                    </MobileNavLink>
+                    <MobileNavLink to="/bulk-upload" current={location.pathname} onClick={handleNavClick}>
+                      Bulk Upload
+                    </MobileNavLink>
+                    <MobileNavLink to="/jobs" current={location.pathname} onClick={handleNavClick}>
+                      Jobs
+                    </MobileNavLink>
+                  </>
+                )}
+                {/* Dashboard */}
                 <MobileNavLink to={isRecruiter && isPaid ? "/recruiter-dashboard" : "/candidate-dashboard"} current={location.pathname} onClick={handleNavClick}>
                   Dashboard
                 </MobileNavLink>

@@ -22,11 +22,19 @@ export default function UploadResume() {
   const fetchJobs = async () => {
     try {
       const response = await api.get('/recruitment/jobs/');
-      // Filter jobs by current user's email
-      const userJobs = response.data.filter(job => 
-        job.posted_by_email === currentUser?.email
-      );
-      setJobs(userJobs);
+      const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+      const isRecruiter = userData.role === 'RECRUITER';
+      
+      if (isRecruiter) {
+        // Recruiters can upload resumes to their own jobs
+        const userJobs = response.data.filter(job => 
+          job.posted_by_email === currentUser?.email
+        );
+        setJobs(userJobs);
+      } else {
+        // Candidates see ALL available jobs to apply to
+        setJobs(response.data);
+      }
     } catch (error) {
       console.error('Error fetching jobs:', error);
     }
@@ -100,7 +108,7 @@ export default function UploadResume() {
               Upload <span className="text-primary">Resume</span>
             </h1>
             <p className="text-gray-400 text-lg">
-              Upload candidate resumes to screen them with our AI-powered system
+              Apply to jobs by uploading your resume for AI-powered screening
             </p>
           </div>
 

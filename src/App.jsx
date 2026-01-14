@@ -127,11 +127,15 @@ function AppContent() {
             </ProtectedRoute>
           } />
 
-          {/* Shared Routes */}
+          {/* Jobs - Recruiters only */}
           <Route path="/jobs" element={
-            <ProtectedRoute>
-              <Jobs />
-            </ProtectedRoute>
+            isRecruiter && isPaid ? (
+              <ProtectedRoute>
+                <Jobs />
+              </ProtectedRoute>
+            ) : (
+              <Navigate to="/upload-resume" replace />
+            )
           } />
 
           {/* Redirect invalid routes to home */}

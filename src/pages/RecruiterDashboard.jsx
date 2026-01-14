@@ -25,7 +25,7 @@ export default function RecruiterDashboard() {
   const fetchDashboardData = async () => {
     try {
       // Fetch jobs and candidates data
-      const jobsResponse = await axios.get(`${config.apiUrl}/api/jobs/`);
+      const jobsResponse = await axios.get(`${config.apiUrl}/api/recruitment/jobs/`);
       const jobs = jobsResponse.data;
 
       let totalCandidates = 0;

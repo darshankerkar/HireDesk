@@ -2,8 +2,10 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Mail, Lock } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import axios from 'axios';
+import config from '../../config';
 
-export default function LoginModal({ isOpen, onClose }) {
+export default function LoginModal({ isOpen, onClose, preselectedRole = null }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -16,8 +18,49 @@ export default function LoginModal({ isOpen, onClose }) {
     setLoading(true);
 
     try {
-      await login(email, password);
-      onClose();
+      // Firebase login
+      const userCredential = await login(email, password);
+      
+      // Get Django JWT token
+      try {
+        const response = await axios.post(`${config.apiUrl}/auth/token/`, {
+          username: email.split('@')[0],
+          password: password
+        });
+
+        const { user, access, refresh } = response.data;
+        
+        // Store user data
+        const userData = {
+          email: user.email,
+          role: user.role,
+          is_recruiter: user.is_recruiter,
+          is_paid: user.is_paid,
+          company_name: user.company_name,
+          subscription_plan: user.subscription_plan
+        };
+        localStorage.setItem('userData', JSON.stringify(userData));
+        
+        // Store tokens
+        localStorage.setItem('access_token', access);
+        localStorage.setItem('refresh_token', refresh);
+        
+        // Store Firebase user
+        if (userCredential.user) {
+          const firebaseUser = {
+            uid: userCredential.user.uid,
+            email: userCredential.user.email,
+            accessToken: await userCredential.user.getIdToken()
+          };
+          localStorage.setItem('firebaseUser', JSON.stringify(firebaseUser));
+        }
+
+        onClose();
+        window.location.reload();
+      } catch (backendError) {
+        console.error('Backend login error:', backendError);
+        setError('Invalid credentials. Please try again.');
+      }
     } catch (err) {
       setError(err.message || 'Login failed');
     } finally {
@@ -31,6 +74,7 @@ export default function LoginModal({ isOpen, onClose }) {
     try {
       await loginWithGoogle();
       onClose();
+      window.location.reload();
     } catch (err) {
       setError(err.message || 'Google sign-in failed');
     } finally {

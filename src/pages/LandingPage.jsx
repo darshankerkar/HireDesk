@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight, CheckCircle, Upload, Cpu, ShieldCheck, Users, Zap, Target, TrendingUp, Lock } from 'lucide-react';
-import LoginModal from '../components/LoginModal';
-import SignUpModal from '../components/SignUpModal';
+import RoleSelectionModal from '../components/RoleSelectionModal';
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 20 },
@@ -20,8 +19,18 @@ const staggerContainer = {
 };
 
 export default function LandingPage() {
-  const [loginModalOpen, setLoginModalOpen] = useState(false);
-  const [signUpModalOpen, setSignUpModalOpen] = useState(false);
+  const [roleSelectionOpen, setRoleSelectionOpen] = useState(false);
+  const [roleSelectionMode, setRoleSelectionMode] = useState('signup'); // 'signup' or 'login'
+
+  const handleSignUpClick = () => {
+    setRoleSelectionMode('signup');
+    setRoleSelectionOpen(true);
+  };
+
+  const handleLoginClick = () => {
+    setRoleSelectionMode('login');
+    setRoleSelectionOpen(true);
+  };
 
   return (
     <>
@@ -40,13 +49,13 @@ export default function LandingPage() {
               {/* Auth Buttons */}
               <div className="flex items-center gap-3">
                 <button
-                  onClick={() => setLoginModalOpen(true)}
+                  onClick={handleLoginClick}
                   className="px-5 py-2 rounded-full bg-surface text-white text-sm font-medium hover:bg-primary hover:text-dark transition-colors duration-300 border border-gray-700 hover:border-primary"
                 >
                   Login
                 </button>
                 <button
-                  onClick={() => setSignUpModalOpen(true)}
+                  onClick={handleSignUpClick}
                   className="px-5 py-2 rounded-full bg-primary text-dark text-sm font-medium hover:bg-white transition-colors duration-300"
                 >
                   Sign Up
@@ -106,13 +115,13 @@ export default function LandingPage() {
               className="flex flex-col sm:flex-row gap-4 justify-center items-center"
             >
               <button
-                onClick={() => setSignUpModalOpen(true)}
+                onClick={handleSignUpClick}
                 className="inline-flex items-center px-8 py-4 bg-primary text-dark font-bold text-lg rounded-full hover:bg-white transition-colors duration-300"
               >
                 Get Started <ArrowRight className="ml-2 h-5 w-5" />
               </button>
               <button
-                onClick={() => setLoginModalOpen(true)}
+                onClick={handleLoginClick}
                 className="inline-flex items-center px-8 py-4 bg-transparent border-2 border-primary text-primary font-bold text-lg rounded-full hover:bg-primary hover:text-dark transition-colors duration-300"
               >
                 Login to Continue
@@ -331,13 +340,13 @@ export default function LandingPage() {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                 <button
-                  onClick={() => setSignUpModalOpen(true)}
+                  onClick={handleSignUpClick}
                   className="inline-flex items-center px-10 py-5 bg-primary text-dark font-bold text-xl rounded-full hover:bg-white transition-colors duration-300"
                 >
                   Start Free Trial <ArrowRight className="ml-2 h-6 w-6" />
                 </button>
                 <button
-                  onClick={() => setLoginModalOpen(true)}
+                  onClick={handleLoginClick}
                   className="inline-flex items-center px-10 py-5 bg-transparent border-2 border-gray-700 text-white font-bold text-xl rounded-full hover:border-primary hover:text-primary transition-colors duration-300"
                 >
                   Login
@@ -361,14 +370,10 @@ export default function LandingPage() {
         </footer>
       </div>
 
-      <LoginModal
-        isOpen={loginModalOpen}
-        onClose={() => setLoginModalOpen(false)}
-      />
-
-      <SignUpModal
-        isOpen={signUpModalOpen}
-        onClose={() => setSignUpModalOpen(false)}
+      <RoleSelectionModal
+        isOpen={roleSelectionOpen}
+        onClose={() => setRoleSelectionOpen(false)}
+        mode={roleSelectionMode}
       />
     </>
   );

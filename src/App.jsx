@@ -1,9 +1,13 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import Navbar from './components/Navbar';
 import ChatBot from './components/ChatBot';
 import ProtectedRoute from './components/ProtectedRoute';
 import Home from './pages/Home';
 import Dashboard from './pages/Dashboard';
+import RecruiterDashboard from './pages/RecruiterDashboard';
+import CandidateDashboard from './pages/CandidateDashboard';
+import PaymentPage from './pages/PaymentPage';
 import Jobs from './pages/Jobs';
 import UploadResume from './pages/UploadResume';
 import BulkUpload from './pages/BulkUpload';
@@ -12,39 +16,112 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 
 function AppContent() {
   const { currentUser } = useAuth();
+  const [userData, setUserData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Load user data from localStorage
+    const storedUserData = localStorage.getItem('userData');
+    if (storedUserData) {
+      setUserData(JSON.parse(storedUserData));
+    }
+    setLoading(false);
+  }, [currentUser]);
 
   // Show landing page if user is not logged in
-  if (!currentUser) {
+  if (!currentUser || !userData) {
     return <LandingPage />;
   }
 
-  // Show normal app with navbar if user is logged in
+  // Loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-dark flex items-center justify-center">
+        <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  const isRecruiter = userData.role === 'RECRUITER';
+  const isPaid = userData.is_paid;
+
+  // Recruiter Payment Gate: Unpaid recruiters must go to payment page
+  if (isRecruiter && !isPaid) {
+    return (
+      <div className="min-h-screen bg-dark text-secondary font-sans">
+        <Navbar />
+        <main className="pt-20">
+          <Routes>
+            <Route path="/payment" element={<PaymentPage />} />
+            <Route path="*" element={<Navigate to="/payment" replace />} />
+          </Routes>
+        </main>
+      </div>
+    );
+  }
+
+  // Determine default dashboard based on role
+  const defaultDashboard = isRecruiter ? '/recruiter-dashboard' : '/candidate-dashboard';
+
+  // Show normal app with navbar if user is logged in and authorized
   return (
     <div className="min-h-screen bg-dark text-secondary font-sans">
       <Navbar />
       <main className="pt-20">
         <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/dashboard" element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          } />
+          <Route path="/" element={<Navigate to={defaultDashboard} replace />} />
+          
+          {/* Recruiter Routes - Only for paid recruiters */}
+          {isRecruiter && isPaid && (
+            <>
+              <Route path="/recruiter-dashboard" element={
+                <ProtectedRoute>
+                  <RecruiterDashboard />
+                </ProtectedRoute>
+              } />
+              <Route path="/bulk-upload" element={
+                <ProtectedRoute>
+                  <BulkUpload />
+                </ProtectedRoute>
+              } />
+              <Route path="/dashboard" element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              } />
+            </>
+          )}
+
+          {/* Candidate Routes - Only for candidates */}
+          {!isRecruiter && (
+            <>
+              <Route path="/candidate-dashboard" element={
+                <ProtectedRoute>
+                  <CandidateDashboard />
+                </ProtectedRoute>
+              } />
+              <Route path="/upload-resume" element={
+                <ProtectedRoute>
+                  <UploadResume />
+                </ProtectedRoute>
+              } />
+            </>
+          )}
+
+          {/* Shared Routes - Available to both roles */}
           <Route path="/jobs" element={
             <ProtectedRoute>
               <Jobs />
             </ProtectedRoute>
           } />
-          <Route path="/upload-resume" element={
+          <Route path="/home" element={
             <ProtectedRoute>
-              <UploadResume />
+              <Home />
             </ProtectedRoute>
           } />
-          <Route path="/bulk-upload" element={
-            <ProtectedRoute>
-              <BulkUpload />
-            </ProtectedRoute>
-          } />
+
+          {/* Redirect invalid routes to default dashboard */}
+          <Route path="*" element={<Navigate to={defaultDashboard} replace />} />
         </Routes>
       </main>
       <ChatBot />
@@ -63,4 +140,3 @@ function App() {
 }
 
 export default App;
-

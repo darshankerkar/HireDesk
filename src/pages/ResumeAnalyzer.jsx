@@ -32,10 +32,12 @@ const staggerContainer = {
 
 export default function ResumeAnalyzer() {
     const [selectedFile, setSelectedFile] = useState(null);
+    const [pastedText, setPastedText] = useState('');
     const [analyzing, setAnalyzing] = useState(false);
     const [analysis, setAnalysis] = useState(null);
     const [error, setError] = useState(null);
     const [useUploadedResume, setUseUploadedResume] = useState(false);
+    const [inputMode, setInputMode] = useState('file'); // 'file' or 'paste'
     const fileInputRef = useRef(null);
 
     const features = [
@@ -106,8 +108,8 @@ export default function ResumeAnalyzer() {
     };
 
     const analyzeResume = async () => {
-        if (!selectedFile) {
-            setError('Please select a resume file first');
+        if (!selectedFile && !pastedText.trim()) {
+            setError('Please upload a file or paste your resume text');
             return;
         }
 
@@ -118,7 +120,10 @@ export default function ResumeAnalyzer() {
         try {
             let resumeText = '';
 
-            if (selectedFile.fromStorage) {
+            if (pastedText.trim()) {
+                // Use pasted text directly
+                resumeText = pastedText;
+            } else if (selectedFile.fromStorage) {
                 // Use the stored resume data
                 resumeText = selectedFile.data.extractedText || selectedFile.data.fileName;
             } else {
@@ -243,49 +248,96 @@ export default function ResumeAnalyzer() {
                 >
                     <h2 className="text-2xl font-bold mb-6">Upload Your Resume</h2>
 
-                    <div className="space-y-4">
-                        {/* File Upload */}
-                        <div
-                            onClick={() => fileInputRef.current?.click()}
-                            className="border-2 border-dashed border-gray-700 rounded-xl p-8 text-center cursor-pointer hover:border-primary transition-colors duration-300"
-                        >
-                            <Upload className="h-12 w-12 text-gray-500 mx-auto mb-4" />
-                            <p className="text-lg font-medium mb-2">
-                                {selectedFile && !selectedFile.fromStorage
-                                    ? selectedFile.name
-                                    : 'Click to upload resume'}
-                            </p>
-                            <p className="text-sm text-gray-500">PDF or DOCX format</p>
-                            <input
-                                ref={fileInputRef}
-                                type="file"
-                                accept=".pdf,.docx"
-                                onChange={handleFileSelect}
-                                className="hidden"
-                            />
-                        </div>
-
-                        {/* Or Divider */}
-                        <div className="flex items-center gap-4">
-                            <div className="flex-1 h-px bg-gray-800"></div>
-                            <span className="text-gray-500 text-sm">OR</span>
-                            <div className="flex-1 h-px bg-gray-800"></div>
-                        </div>
-
-                        {/* Use Previously Uploaded Resume */}
+                    {/* Mode Tabs */}
+                    <div className="flex gap-2 mb-6">
                         <button
-                            onClick={handleUseUploadedResume}
-                            className="w-full py-4 px-6 bg-dark border border-gray-700 rounded-xl hover:border-primary transition-colors duration-300 flex items-center justify-center gap-3"
+                            onClick={() => setInputMode('file')}
+                            className={`flex-1 py-3 px-4 rounded-lg font-medium transition-colors ${
+                                inputMode === 'file'
+                                    ? 'bg-primary text-dark'
+                                    : 'bg-dark text-gray-400 hover:text-white'
+                            }`}
                         >
-                            <FileText className="h-5 w-5 text-primary" />
-                            <span>Use Previously Uploaded Resume</span>
+                            Upload File
                         </button>
+                        <button
+                            onClick={() => setInputMode('paste')}
+                            className={`flex-1 py-3 px-4 rounded-lg font-medium transition-colors ${
+                                inputMode === 'paste'
+                                    ? 'bg-primary text-dark'
+                                    : 'bg-dark text-gray-400 hover:text-white'
+                            }`}
+                        >
+                            Paste Text
+                        </button>
+                    </div>
 
-                        {useUploadedResume && selectedFile && (
-                            <div className="flex items-center gap-2 text-sm text-primary">
-                                <CheckCircle className="h-4 w-4" />
-                                <span>Using: {selectedFile.name}</span>
-                            </div>
+                    <div className="space-y-4">
+                        {inputMode === 'file' ? (
+                            <>
+                                {/* File Upload */}
+                                <div
+                                    onClick={() => fileInputRef.current?.click()}
+                                    className="border-2 border-dashed border-gray-700 rounded-xl p-8 text-center cursor-pointer hover:border-primary transition-colors duration-300"
+                                >
+                                    <Upload className="h-12 w-12 text-gray-500 mx-auto mb-4" />
+                                    <p className="text-lg font-medium mb-2">
+                                        {selectedFile && !selectedFile.fromStorage
+                                            ? selectedFile.name
+                                            : 'Click to upload resume'}
+                                    </p>
+                                    <p className="text-sm text-gray-500">PDF or DOCX format</p>
+                                    <input
+                                        ref={fileInputRef}
+                                        type="file"
+                                        accept=".pdf,.docx"
+                                        onChange={handleFileSelect}
+                                        className="hidden"
+                                    />
+                                </div>
+
+                                {/* Or Divider */}
+                                <div className="flex items-center gap-4">
+                                    <div className="flex-1 h-px bg-gray-800"></div>
+                                    <span className="text-gray-500 text-sm">OR</span>
+                                    <div className="flex-1 h-px bg-gray-800"></div>
+                                </div>
+
+                                {/* Use Previously Uploaded Resume */}
+                                <button
+                                    onClick={handleUseUploadedResume}
+                                    className="w-full py-4 px-6 bg-dark border border-gray-700 rounded-xl hover:border-primary transition-colors duration-300 flex items-center justify-center gap-3"
+                                >
+                                    <FileText className="h-5 w-5 text-primary" />
+                                    <span>Use Previously Uploaded Resume</span>
+                                </button>
+
+                                {useUploadedResume && selectedFile && (
+                                    <div className="flex items-center gap-2 text-sm text-primary">
+                                        <CheckCircle className="h-4 w-4" />
+                                        <span>Using: {selectedFile.name}</span>
+                                    </div>
+                                )}
+                            </>
+                        ) : (
+                            <>
+                                {/* Paste Text Area */}
+                                <div>
+                                    <textarea
+                                        value={pastedText}
+                                        onChange={(e) => {
+                                            setPastedText(e.target.value);
+                                            setError(null);
+                                        }}
+                                        placeholder="Paste your resume text here... (Include your name, skills, experience, education, etc.)"
+                                        rows={12}
+                                        className="w-full p-4 bg-dark border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-primary transition-colors resize-none"
+                                    />
+                                    <p className="text-sm text-gray-500 mt-2">
+                                        {pastedText.length} / 10000 characters
+                                    </p>
+                                </div>
+                            </>
                         )}
                     </div>
 
@@ -307,7 +359,7 @@ export default function ResumeAnalyzer() {
                     {/* Analyze Button */}
                     <button
                         onClick={analyzeResume}
-                        disabled={!selectedFile || analyzing}
+                        disabled={(!selectedFile && !pastedText.trim()) || analyzing}
                         className="w-full mt-6 py-4 px-6 bg-primary text-dark font-bold text-lg rounded-full hover:bg-white transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
                     >
                         {analyzing ? (

@@ -70,22 +70,13 @@ export default function LandingPage() {
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-surface via-dark to-dark opacity-50"></div>
           <div className="container mx-auto px-6 relative z-10 text-center">
             {/* Large Centered Logo */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.6, ease: "easeOut" }}
-              className="mb-8"
-            >
-              <div className="text-7xl md:text-9xl font-display font-bold text-white tracking-tighter">
-                Hire<span className="text-primary">Desk</span>
-              </div>
-            </motion.div>
+            {/* Large Centered Logo Removed as per user request */}
 
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.3, duration: 0.5 }}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-surface border border-primary/30 rounded-full mb-8"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-surface border border-primary/30 rounded-full mb-8 mt-12"
             >
               <Lock className="h-4 w-4 text-primary" />
               <span className="text-sm text-gray-300">Login Required to Access Platform</span>
@@ -204,13 +195,6 @@ export default function LandingPage() {
                 <Cpu className="h-12 w-12 text-primary mb-6" />
                 <h3 className="text-2xl font-bold mb-4">AI Scoring</h3>
                 <p className="text-gray-400">Automatically rank candidates based on job description relevance using vector embeddings.</p>
-              </motion.div>
-
-              {/* Feature 3 */}
-              <motion.div variants={fadeInUp} className="p-8 bg-surface rounded-2xl border border-gray-800 hover:border-primary transition-colors duration-300">
-                <ShieldCheck className="h-12 w-12 text-primary mb-6" />
-                <h3 className="text-2xl font-bold mb-4">Fraud Detection</h3>
-                <p className="text-gray-400">Detect fake certificates and manipulated documents with OCR and anomaly detection.</p>
               </motion.div>
             </motion.div>
           </div>

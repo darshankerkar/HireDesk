@@ -42,7 +42,7 @@ export default async function handler(req, res) {
     }
 
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash-latest' });
 
     // Construct the analysis prompt
     const prompt = `You are an expert resume reviewer and career coach. Analyze the following resume and provide detailed, constructive feedback. Structure your response in the following sections:

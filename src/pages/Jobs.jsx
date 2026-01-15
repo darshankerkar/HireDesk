@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Briefcase, Users, ChevronRight, ChevronDown, Download, Edit2, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import toast from 'react-hot-toast';
 import api from '../utils/api';
 import { useAuth } from '../contexts/AuthContext';
 import AddJobModal from '../components/AddJobModal';
@@ -87,7 +88,7 @@ export default function Jobs() {
     e.stopPropagation();
     
     if (!candidate.resume?.download_url) {
-      alert("No resume file available.");
+      toast.error('No resume file available');
       return;
     }
 
@@ -110,7 +111,7 @@ export default function Jobs() {
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Download error:', error);
-      alert('Failed to download resume. Please try again.');
+      toast.error('Failed to download resume. Please try again');
     }
   };
 

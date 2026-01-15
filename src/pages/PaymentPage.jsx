@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Check, CreditCard, Zap, TrendingUp, Shield, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import axios from 'axios';
 import config from '../../config';
 
@@ -77,8 +78,10 @@ export default function PaymentPage() {
         localStorage.setItem('userData', JSON.stringify(userData));
 
         // Force full page reload to update App.jsx state
-        alert('✅ Payment successful! Redirecting to dashboard...');
-        window.location.href = '/recruiter-dashboard';
+        toast.success('Payment successful! Redirecting to dashboard...');
+        setTimeout(() => {
+          window.location.href = '/recruiter-dashboard';
+        }, 1500);
       }
     } catch (err) {
       console.error('Payment error:', err);

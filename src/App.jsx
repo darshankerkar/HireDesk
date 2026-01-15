@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import { Toaster } from 'react-hot-toast';
 import Navbar from './components/Navbar';
 import ChatBot from './components/ChatBot';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -162,6 +163,7 @@ function App() {
   return (
     <AuthProvider>
       <Router>
+        <Toaster position="top-right" />
         <AppContent />
       </Router>
     </AuthProvider>

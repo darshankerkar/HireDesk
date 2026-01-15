@@ -1,6 +1,7 @@
 import React from 'react';
 import { X, Mail, Phone, Calendar, FileText, Award, Briefcase, Code, CheckCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import toast from 'react-hot-toast';
 
 export default function CandidateProfileModal({ isOpen, onClose, candidate }) {
   if (!isOpen || !candidate) return null;
@@ -84,7 +85,7 @@ export default function CandidateProfileModal({ isOpen, onClose, candidate }) {
     console.log('Download URL:', resume?.download_url);
     
     if (!resume?.download_url) {
-      alert('Resume file not available. Please contact support.');
+      toast.error('Resume file not available. Please contact support');
       return;
     }
 
@@ -107,7 +108,7 @@ export default function CandidateProfileModal({ isOpen, onClose, candidate }) {
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Download error:', error);
-      alert('Failed to download resume. Please try again.');
+      toast.error('Failed to download resume. Please try again');
     }
   };
 

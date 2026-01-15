@@ -64,8 +64,11 @@ function AppContent() {
     );
   }
 
-  // Determine default dashboard based on role
-  const defaultDashboard = isRecruiter ? '/recruiter-dashboard' : '/candidate-dashboard';
+  // Determine default dashboard based on role and payment status
+  // Paid recruiters -> Recruiter Dashboard
+  // Unpaid recruiters -> Candidate Dashboard (can upload/apply like candidates)  
+  // Candidates -> Candidate Dashboard
+  const defaultDashboard = (isRecruiter && isPaid) ? '/recruiter-dashboard' : '/candidate-dashboard';
 
   // Show normal app with navbar if user is logged in and authorized
   return (
@@ -77,7 +80,7 @@ function AppContent() {
           <Route path="/" element={<Home />} />
           <Route path="/home" element={<Home />} />
 
-          {/* Recruiter Dashboard */}
+          {/* Recruiter Dashboard - PAID recruiters only */}
           <Route path="/recruiter-dashboard" element={
             isRecruiter && isPaid ? (
               <ProtectedRoute>
@@ -88,9 +91,9 @@ function AppContent() {
             )
           } />
 
-          {/* Candidate Dashboard */}
+          {/* Candidate Dashboard - Candidates AND unpaid recruiters */}
           <Route path="/candidate-dashboard" element={
-            !isRecruiter ? (
+            !isRecruiter || (isRecruiter && !isPaid) ? (
               <ProtectedRoute>
                 <CandidateDashboard />
               </ProtectedRoute>

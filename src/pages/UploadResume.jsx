@@ -22,19 +22,8 @@ export default function UploadResume() {
   const fetchJobs = async () => {
     try {
       const response = await api.get('/recruitment/jobs/');
-      const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-      const isRecruiter = userData.role === 'RECRUITER';
-      
-      if (isRecruiter) {
-        // Recruiters can upload resumes to their own jobs
-        const userJobs = response.data.filter(job => 
-          job.posted_by_email === currentUser?.email
-        );
-        setJobs(userJobs);
-      } else {
-        // Candidates see ALL available jobs to apply to
-        setJobs(response.data);
-      }
+      // Show ALL jobs to everyone (both candidates and recruiters)
+      setJobs(response.data);
     } catch (error) {
       console.error('Error fetching jobs:', error);
     }

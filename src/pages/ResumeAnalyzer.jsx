@@ -211,13 +211,8 @@ export default function ResumeAnalyzer() {
                         <Sparkles className="h-4 w-4 text-primary" />
                         <span className="text-sm text-gray-300">AI-Powered Resume Analysis</span>
                     </div>
-                    <h1 className="text-5xl md:text-6xl font-display font-bold mb-4">
-                        Resume <span className="text-primary">Analyzer</span>
-                    </h1>
-                    <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-                        Get professional feedback and actionable suggestions to improve your resume and stand out to employers
-                    </p>
                 </motion.div>
+
 
                 {/* Features Grid */}
                 <motion.div

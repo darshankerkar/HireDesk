@@ -91,12 +91,7 @@ export default function Home() {
               <p className="text-gray-400">Automatically rank candidates based on job description relevance using vector embeddings.</p>
             </motion.div>
 
-            {/* Feature 3 */}
-            <motion.div variants={fadeInUp} className="p-8 bg-dark rounded-2xl border border-gray-800 hover:border-primary transition-colors duration-300">
-              <ShieldCheck className="h-12 w-12 text-primary mb-6" />
-              <h3 className="text-2xl font-bold mb-4">Fraud Detection</h3>
-              <p className="text-gray-400">Detect fake certificates and manipulated documents with OCR and anomaly detection.</p>
-            </motion.div>
+
           </motion.div>
         </div>
       </section>

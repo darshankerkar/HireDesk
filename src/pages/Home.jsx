@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight, CheckCircle, Upload, Cpu, ShieldCheck, Users } from 'lucide-react';
+import { ArrowRight, CheckCircle, Upload, Cpu, ShieldCheck, Users, FileSpreadsheet } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const fadeInUp = {
@@ -89,6 +89,15 @@ export default function Home() {
               <Cpu className="h-12 w-12 text-primary mb-6" />
               <h3 className="text-2xl font-bold mb-4">AI Scoring</h3>
               <p className="text-gray-400">Automatically rank candidates based on job description relevance using vector embeddings.</p>
+            </motion.div>
+
+
+            {/* Feature 3 - Bulk Upload (PAID) */}
+            <motion.div variants={fadeInUp} className="relative p-8 bg-dark rounded-2xl border border-gray-800 hover:border-primary transition-colors duration-300 overflow-hidden">
+                <div className="absolute top-4 right-4 px-2 py-1 bg-primary text-dark text-xs font-bold rounded">PAID</div>
+                <FileSpreadsheet className="h-12 w-12 text-primary mb-6" />
+                <h3 className="text-2xl font-bold mb-4">Bulk Upload</h3>
+                <p className="text-gray-400">Upload multiple candidates at once using CSV or Excel files for rapid processing.</p>
             </motion.div>
 
 

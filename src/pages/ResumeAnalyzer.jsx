@@ -96,7 +96,9 @@ export default function ResumeAnalyzer() {
             formData.append('file', file);
             
             // Get backend URL from env
-            const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
+            // VITE_API_URL already includes /api, so we need to strip it for this endpoint
+            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+            const backendUrl = apiUrl.replace('/api', ''); // Remove /api to get base URL
             
             // Call ML service via backend to extract text
             const response = await axios.post(`${backendUrl}/api/parse-resume-text`, formData, {

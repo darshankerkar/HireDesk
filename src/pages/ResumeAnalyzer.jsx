@@ -90,21 +90,31 @@ export default function ResumeAnalyzer() {
     };
 
     const extractTextFromFile = async (file) => {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = async (e) => {
-                try {
-                    const text = e.target.result;
-                    // For simplicity, we'll use the text content directly
-                    // In production, you'd want proper PDF/DOCX parsing
-                    resolve(text);
-                } catch (error) {
-                    reject(error);
-                }
-            };
-            reader.onerror = reject;
-            reader.readAsText(file);
-        });
+        try {
+            // Use the ML service to parse PDF/DOCX files properly
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            // Get backend URL from env
+            const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
+            
+            // Call ML service via backend to extract text
+            const response = await axios.post(`${backendUrl}/api/parse-resume-text`, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                },
+                timeout: 60000 // 60 second timeout
+            });
+            
+            if (response.data.success) {
+                return response.data.text;
+            } else {
+                throw new Error(response.data.error || 'Failed to extract text from file');
+            }
+        } catch (error) {
+            console.error('Text extraction error:', error);
+            throw new Error('Failed to extract text from file. Please try pasting text instead.');
+        }
     };
 
     const analyzeResume = async () => {
@@ -127,8 +137,14 @@ export default function ResumeAnalyzer() {
                 // Use the stored resume data
                 resumeText = selectedFile.data.extractedText || selectedFile.data.fileName;
             } else {
-                // Extract text from uploaded file
-                resumeText = await extractTextFromFile(selectedFile);
+                // Extract text from uploaded file using ML service
+                try {
+                    resumeText = await extractTextFromFile(selectedFile);
+                } catch (extractError) {
+                    setError(extractError.message || 'Failed to extract text. Please paste your resume text instead.');
+                    setAnalyzing(false);
+                    return;
+                }
             }
 
             // Truncate resume text to avoid 413 error (max 10000 chars)

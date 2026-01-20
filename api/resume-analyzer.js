@@ -72,12 +72,17 @@ Please provide professional, actionable, and encouraging feedback.`;
 
   } catch (error) {
     console.error('Gemini API Error:', error);
+    console.error('Error name:', error.name);
+    console.error('Error message:', error.message);
+    console.error('Error stack:', error.stack);
     
-    // Return user-friendly error message
+    // Return user-friendly error message with details
     return res.status(500).json({ 
       success: false,
       error: 'Failed to analyze resume. Please try again.',
-      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      errorType: error.name,
+      errorMessage: error.message,
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
 }

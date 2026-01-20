@@ -2,6 +2,9 @@
 
 HireDesk is a modern and easy-to-use job and hiring management platform. It helps recruiters post job openings and manage applications, while job seekers can explore opportunities and track their application status seamlessly.
 
+**Watch the HireDesk Demo Video**
+[![HireDesk Demo Video](https://img.youtube.com/vi/CIT34qZeYtQ/maxresdefault.jpg)](https://youtu.be/CIT34qZeYtQ)
+
 ---
 
 ## Overview
@@ -30,7 +33,7 @@ The platform aims to make hiring transparent, organized, and accessible.
 - **UI Styling:** Tailwind CSS + Bootstrap
 - **Backend:** Django + Django REST Framework
 - **Database:** PostgreSQL (Neon)
-- **Authentication:** JWT-based Authentication
+- **Authentication:** Firebase Auth
 - **Deployment:** Vercel (Frontend)
 
 ---

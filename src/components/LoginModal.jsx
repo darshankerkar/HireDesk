@@ -100,7 +100,7 @@ export default function LoginModal({ isOpen, onClose, preselectedRole = null }) 
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="relative bg-surface border border-gray-800 rounded-3xl p-8 w-full max-w-md shadow-2xl"
+            className="relative bg-surface border border-gray-800 rounded-3xl p-8 w-full max-w-md shadow-2xl max-h-screen overflow-y-auto"
           >
             {/* Close Button */}
             <button

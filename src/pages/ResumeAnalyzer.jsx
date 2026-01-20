@@ -100,7 +100,7 @@ export default function ResumeAnalyzer() {
             const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
             
             // Call backend to extract text - recruitment endpoints are under /api/recruitment/
-            const response = await axios.post(`${apiUrl}/recruitment/parse-resume-text`, formData, {
+            const response = await axios.post(`${apiUrl}/recruitment/parse-resume-text/`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data'
                 },

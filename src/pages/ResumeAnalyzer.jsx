@@ -95,13 +95,12 @@ export default function ResumeAnalyzer() {
             const formData = new FormData();
             formData.append('file', file);
             
-            // Get backend URL from env
-            // VITE_API_URL already includes /api, so we need to strip it for this endpoint
+            // Get backend API URL from env
+            // VITE_API_URL = https://hiredesk-backend.onrender.com/api
             const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
-            const backendUrl = apiUrl.replace('/api', ''); // Remove /api to get base URL
             
-            // Call ML service via backend to extract text
-            const response = await axios.post(`${backendUrl}/api/parse-resume-text`, formData, {
+            // Call backend to extract text - recruitment endpoints are under /api/recruitment/
+            const response = await axios.post(`${apiUrl}/recruitment/parse-resume-text`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data'
                 },

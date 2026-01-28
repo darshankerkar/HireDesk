@@ -24,23 +24,50 @@ export default function RecruiterDashboard() {
 
   const fetchDashboardData = async () => {
     try {
-      // Fetch jobs and candidates data
+      // Fetch jobs data
       const jobsResponse = await axios.get(`${config.apiUrl}/api/recruitment/jobs/`);
       const jobs = jobsResponse.data;
 
       let totalCandidates = 0;
       let totalScore = 0;
       let scoreCount = 0;
+      let recentCount = 0;
 
+      // Calculate date for "this week" (last 7 days)
+      const oneWeekAgo = new Date();
+      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+      // Fetch detailed candidate data for each job
       for (const job of jobs) {
-        if (job.candidates) {
-          totalCandidates += job.candidates.length;
-          job.candidates.forEach(candidate => {
-            if (candidate.score) {
-              totalScore += candidate.score;
+        try {
+          const candidatesResponse = await axios.get(
+            `${config.apiUrl}/api/recruitment/jobs/${job.id}/candidates/`
+          );
+          const candidates = candidatesResponse.data;
+
+          totalCandidates += candidates.length;
+
+          candidates.forEach(candidate => {
+            // Calculate average score
+            if (candidate.score !== null && candidate.score !== undefined) {
+              totalScore += parseFloat(candidate.score);
               scoreCount++;
             }
+
+            // Count recent applications (last 7 days)
+            if (candidate.created_at) {
+              const createdDate = new Date(candidate.created_at);
+              if (createdDate >= oneWeekAgo) {
+                recentCount++;
+              }
+            }
           });
+        } catch (error) {
+          console.error(`Error fetching candidates for job ${job.id}:`, error);
+          // Use candidate_count from job if available
+          if (job.candidate_count) {
+            totalCandidates += job.candidate_count;
+          }
         }
       }
 
@@ -48,7 +75,7 @@ export default function RecruiterDashboard() {
         totalJobs: jobs.length,
         totalCandidates,
         avgScore: scoreCount > 0 ? (totalScore / scoreCount).toFixed(1) : 0,
-        recentApplications: totalCandidates // Simplified for demo
+        recentApplications: recentCount
       });
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
@@ -170,11 +197,52 @@ export default function RecruiterDashboard() {
           ))}
         </div>
 
-        {/* Quick Actions */}
+        {/* Featured Stats Card - Total Candidates */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
+          className="mb-8"
+        >
+          <div className="bg-gradient-to-br from-surface via-surface to-primary/5 border border-gray-800 rounded-2xl p-8 hover:border-primary/50 transition-all">
+            <div className="flex items-start justify-between mb-6">
+              <div>
+                <p className="text-gray-400 text-sm font-medium mb-2">Total Candidates</p>
+                <h2 className="text-5xl md:text-6xl font-bold text-white">
+                  {stats.totalCandidates.toLocaleString()}
+                </h2>
+              </div>
+              <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center">
+                <Users className="h-8 w-8 text-primary" />
+              </div>
+            </div>
+            
+            {/* Progress Bar */}
+            <div className="relative h-3 bg-gray-800 rounded-full overflow-hidden mb-3">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${Math.min((stats.avgScore / 100) * 100, 100)}%` }}
+                transition={{ duration: 1, delay: 0.5, ease: "easeOut" }}
+                className="absolute top-0 left-0 h-full bg-gradient-to-r from-primary via-yellow-400 to-primary rounded-full"
+              />
+            </div>
+            
+            <p className="text-gray-400 text-sm">
+              {stats.avgScore}% Average Match Rate
+              {stats.avgScore > 0 && (
+                <span className="text-green-400 ml-2">
+                  ↑ Quality candidates identified
+                </span>
+              )}
+            </p>
+          </div>
+        </motion.div>
+
+        {/* Quick Actions */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6 }}
           className="mb-8"
         >
           <h2 className="text-2xl font-bold text-white mb-4">Quick Actions</h2>
@@ -197,11 +265,11 @@ export default function RecruiterDashboard() {
           </div>
         </motion.div>
 
-        {/* Recent Activity */}
+        {/* Platform Features */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
+          transition={{ delay: 0.8 }}
           className="bg-surface border border-gray-800 rounded-2xl p-6"
         >
           <div className="flex items-center justify-between mb-6">

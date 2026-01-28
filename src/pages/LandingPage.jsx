@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, useScroll, useTransform, useMotionValue, useSpring, useInView } from 'framer-motion';
 import { ArrowRight, CheckCircle, Upload, Cpu, ShieldCheck, Users, Zap, Target, TrendingUp, Lock, FileSpreadsheet, Sparkles, Star, Eye, BarChart3, FileCheck } from 'lucide-react';
 import RoleSelectionModal from '../components/RoleSelectionModal';
+import { HeroBackground } from '../components/HeroBackground';
 import axios from 'axios';
 import config from '../../config';
 
@@ -404,6 +405,7 @@ export default function LandingPage() {
 
         {/* Hero Section */}
         <section ref={heroRef} className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden perspective-[2000px]">
+          <HeroBackground />
           <motion.div
             style={{ opacity: heroOpacity, scale: heroScale, y: heroY }}
             className="container mx-auto px-6 relative z-10 text-center max-w-5xl"

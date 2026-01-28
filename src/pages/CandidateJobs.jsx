@@ -340,11 +340,11 @@ export default function CandidateJobs() {
                                         <button
                                             onClick={(e) => {
                                                 e.stopPropagation(); // Prevent opening modal
-                                                navigate('/upload-resume');
+                                                navigate(`/upload-resume?jobId=${job.id}`);
                                             }}
                                             className={`w-full py-3 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 ${hasApplied
-                                                    ? 'bg-dark border border-gray-700 text-gray-300 hover:bg-gray-800'
-                                                    : 'bg-primary text-dark hover:bg-white hover:scale-[1.02]'
+                                                ? 'bg-dark border border-gray-700 text-gray-300 hover:bg-gray-800'
+                                                : 'bg-primary text-dark hover:bg-white hover:scale-[1.02]'
                                                 }`}
                                         >
                                             {hasApplied ? 'View Application' : 'Apply Now'}
@@ -383,7 +383,7 @@ export default function CandidateJobs() {
                     isOpen={isDetailsModalOpen}
                     onClose={() => setIsDetailsModalOpen(false)}
                     job={selectedJob}
-                    onApply={() => navigate('/upload-resume')}
+                    onApply={() => navigate(`/upload-resume?jobId=${selectedJob?.id}`)}
                     hasApplied={selectedJob ? applications.some(app => app.job === selectedJob.id) : false}
                 />
             </div>

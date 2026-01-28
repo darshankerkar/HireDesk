@@ -2,11 +2,14 @@ import { useState, useEffect, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { motion } from 'framer-motion';
 import { Upload, FileText, CheckCircle, AlertCircle, Briefcase } from 'lucide-react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../utils/api';
 
 export default function UploadResume() {
   const { currentUser } = useAuth();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [jobs, setJobs] = useState([]);
   const [selectedJob, setSelectedJob] = useState('');
   const [uploading, setUploading] = useState(false);
@@ -18,6 +21,18 @@ export default function UploadResume() {
       fetchJobs();
     }
   }, [currentUser]);
+
+  // Auto-select job from URL params
+  useEffect(() => {
+    const jobIdFromUrl = searchParams.get('jobId');
+    if (jobIdFromUrl && jobs.length > 0) {
+      // Check if the job exists in our list
+      const jobExists = jobs.some(job => job.id.toString() === jobIdFromUrl);
+      if (jobExists) {
+        setSelectedJob(jobIdFromUrl);
+      }
+    }
+  }, [searchParams, jobs]);
 
   const fetchJobs = async () => {
     try {
@@ -69,10 +84,15 @@ export default function UploadResume() {
 
       setUploadStatus({
         type: 'success',
-        message: 'Resume uploaded and processed successfully!'
+        message: 'Resume uploaded and processed successfully! Redirecting...'
       });
       setUploadedFile(null);
       setSelectedJob('');
+
+      // Redirect to jobs page after 1.5 seconds to show success message
+      setTimeout(() => {
+        navigate('/candidate-jobs');
+      }, 1500);
     } catch (error) {
       setUploadStatus({
         type: 'error',
@@ -106,13 +126,12 @@ export default function UploadResume() {
             {/* Dropzone */}
             <div
               {...getRootProps()}
-              className={`border-2 border-dashed rounded-2xl p-12 text-center cursor-pointer transition-all duration-300 ${
-                isDragActive
-                  ? 'border-primary bg-primary/5'
-                  : uploadedFile
+              className={`border-2 border-dashed rounded-2xl p-12 text-center cursor-pointer transition-all duration-300 ${isDragActive
+                ? 'border-primary bg-primary/5'
+                : uploadedFile
                   ? 'border-green-500 bg-green-500/5'
                   : 'border-gray-700 hover:border-primary hover:bg-primary/5'
-              }`}
+                }`}
             >
               <input {...getInputProps()} />
               <motion.div
@@ -172,11 +191,10 @@ export default function UploadResume() {
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className={`mt-6 p-4 rounded-xl border ${
-                  uploadStatus.type === 'success'
-                    ? 'bg-green-900/30 border-green-900 text-green-400'
-                    : 'bg-red-900/30 border-red-900 text-red-400'
-                }`}
+                className={`mt-6 p-4 rounded-xl border ${uploadStatus.type === 'success'
+                  ? 'bg-green-900/30 border-green-900 text-green-400'
+                  : 'bg-red-900/30 border-red-900 text-red-400'
+                  }`}
               >
                 <div className="flex items-center gap-3">
                   {uploadStatus.type === 'success' ? (

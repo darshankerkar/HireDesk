@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
     Search, Briefcase, MapPin, Clock, DollarSign,
     Building, CheckCircle, Filter, ChevronDown, X,
-    Calendar, Users
+    Calendar, Users, BarChart
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -26,12 +26,10 @@ export default function CandidateJobs() {
 
     // Filter States
     const [searchQuery, setSearchQuery] = useState('');
-    const [filterStatus, setFilterStatus] = useState('all'); // 'all', 'open', 'applied'
-    const [filterDate, setFilterDate] = useState('any'); // 'any', '24h', '7d', '30d'
-    const [sortBy, setSortBy] = useState('newest'); // 'newest', 'oldest', 'most_applicants', 'least_applicants'
-    const [activeKeywords, setActiveKeywords] = useState([]);
-
-    const commonKeywords = ['Remote', 'Full-time', 'Developer', 'Designer', 'Manager'];
+    const [filterStatus, setFilterStatus] = useState('all');
+    const [filterDate, setFilterDate] = useState('any');
+    const [filterCompetition, setFilterCompetition] = useState('any'); // 'any', 'low', 'moderate', 'high'
+    const [sortBy, setSortBy] = useState('newest');
 
     useEffect(() => {
         if (currentUser) {
@@ -41,7 +39,7 @@ export default function CandidateJobs() {
 
     useEffect(() => {
         filterAndSortJobs();
-    }, [searchQuery, filterStatus, filterDate, sortBy, activeKeywords, jobs, applications]);
+    }, [searchQuery, filterStatus, filterDate, filterCompetition, sortBy, jobs, applications]);
 
     const fetchJobsAndApplications = async () => {
         try {
@@ -61,14 +59,6 @@ export default function CandidateJobs() {
         } finally {
             setLoading(false);
         }
-    };
-
-    const toggleKeyword = (keyword) => {
-        setActiveKeywords(prev =>
-            prev.includes(keyword)
-                ? prev.filter(k => k !== keyword)
-                : [...prev, keyword]
-        );
     };
 
     const filterAndSortJobs = () => {
@@ -108,11 +98,14 @@ export default function CandidateJobs() {
             });
         }
 
-        // 4. Keywords Filter
-        if (activeKeywords.length > 0) {
+        // 4. Competition Filter
+        if (filterCompetition !== 'any') {
             result = result.filter(job => {
-                const text = `${job.title} ${job.description} ${job.requirements || ''}`.toLowerCase();
-                return activeKeywords.every(keyword => text.includes(keyword.toLowerCase()));
+                const count = job.candidate_count || 0;
+                if (filterCompetition === 'low') return count < 10;
+                if (filterCompetition === 'moderate') return count >= 10 && count <= 50;
+                if (filterCompetition === 'high') return count > 50;
+                return true;
             });
         }
 
@@ -228,6 +221,17 @@ export default function CandidateJobs() {
                                 </select>
 
                                 <select
+                                    value={filterCompetition}
+                                    onChange={(e) => setFilterCompetition(e.target.value)}
+                                    className="px-4 py-3 bg-dark border border-gray-700 rounded-xl text-white focus:outline-none focus:border-primary cursor-pointer min-w-[170px]"
+                                >
+                                    <option value="any">Any Competition</option>
+                                    <option value="low">Low (&lt; 10)</option>
+                                    <option value="moderate">Moderate (10-50)</option>
+                                    <option value="high">High (50+)</option>
+                                </select>
+
+                                <select
                                     value={sortBy}
                                     onChange={(e) => setSortBy(e.target.value)}
                                     className="px-4 py-3 bg-dark border border-gray-700 rounded-xl text-white focus:outline-none focus:border-primary cursor-pointer min-w-[160px]"
@@ -239,25 +243,6 @@ export default function CandidateJobs() {
                                 </select>
                             </div>
                         </div>
-
-                        {/* Quick Keywords */}
-                        <div className="flex flex-wrap gap-2 items-center border-t border-gray-800 pt-3">
-                            <span className="text-gray-500 text-sm mr-1 flex items-center gap-1">
-                                <Filter className="h-3 w-3" /> Quick Filters:
-                            </span>
-                            {commonKeywords.map(keyword => (
-                                <button
-                                    key={keyword}
-                                    onClick={() => toggleKeyword(keyword)}
-                                    className={`px-3 py-1 rounded-full text-xs font-bold border transition-all ${activeKeywords.includes(keyword)
-                                        ? 'bg-primary text-dark border-primary'
-                                        : 'bg-dark text-gray-400 border-gray-700 hover:border-gray-500'
-                                        }`}
-                                >
-                                    {keyword}
-                                </button>
-                            ))}
-                        </div>
                     </div>
                 </motion.div>
 
@@ -266,14 +251,14 @@ export default function CandidateJobs() {
                     <p className="text-gray-400">
                         Showing <span className="text-white font-bold">{filteredJobs.length}</span> jobs
                     </p>
-                    {(searchQuery || filterStatus !== 'all' || filterDate !== 'any' || activeKeywords.length > 0) && (
+                    {(searchQuery || filterStatus !== 'all' || filterDate !== 'any' || filterCompetition !== 'any') && (
                         <button
                             onClick={() => {
                                 setSearchQuery('');
                                 setFilterStatus('all');
                                 setFilterDate('any');
+                                setFilterCompetition('any');
                                 setSortBy('newest');
-                                setActiveKeywords([]);
                             }}
                             className="text-primary text-sm hover:underline"
                         >
@@ -354,12 +339,12 @@ export default function CandidateJobs() {
                                         {/* Action Button */}
                                         <button
                                             onClick={(e) => {
-                                                e.stopPropagation();
+                                                e.stopPropagation(); // Prevent opening modal
                                                 navigate('/upload-resume');
                                             }}
                                             className={`w-full py-3 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 ${hasApplied
-                                                ? 'bg-dark border border-gray-700 text-gray-300 hover:bg-gray-800'
-                                                : 'bg-primary text-dark hover:bg-white hover:scale-[1.02]'
+                                                    ? 'bg-dark border border-gray-700 text-gray-300 hover:bg-gray-800'
+                                                    : 'bg-primary text-dark hover:bg-white hover:scale-[1.02]'
                                                 }`}
                                         >
                                             {hasApplied ? 'View Application' : 'Apply Now'}
@@ -381,8 +366,8 @@ export default function CandidateJobs() {
                                         setSearchQuery('');
                                         setFilterStatus('all');
                                         setFilterDate('any');
+                                        setFilterCompetition('any');
                                         setSortBy('newest');
-                                        setActiveKeywords([]);
                                     }}
                                     className="mt-6 px-6 py-2 bg-dark border border-gray-700 rounded-full text-primary hover:bg-gray-800 transition-colors"
                                 >

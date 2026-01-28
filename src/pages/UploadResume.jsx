@@ -3,6 +3,7 @@ import { useDropzone } from 'react-dropzone';
 import { motion } from 'framer-motion';
 import { Upload, FileText, CheckCircle, AlertCircle, Briefcase } from 'lucide-react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
+import confetti from 'canvas-confetti';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../utils/api';
 
@@ -80,6 +81,13 @@ export default function UploadResume() {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
+      });
+
+      // Trigger confetti animation
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 }
       });
 
       setUploadStatus({

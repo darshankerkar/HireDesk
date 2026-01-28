@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight, CheckCircle, Upload, Cpu, ShieldCheck, Users, Zap, Target, TrendingUp, Lock, FileSpreadsheet } from 'lucide-react';
 import RoleSelectionModal from '../components/RoleSelectionModal';
+import axios from 'axios';
+import config from '../../config';
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 20 },
@@ -21,6 +23,53 @@ const staggerContainer = {
 export default function LandingPage() {
   const [roleSelectionOpen, setRoleSelectionOpen] = useState(false);
   const [roleSelectionMode, setRoleSelectionMode] = useState('signup'); // 'signup' or 'login'
+  const [stats, setStats] = useState({
+    totalCandidates: 0,
+    avgScore: 0
+  });
+
+  useEffect(() => {
+    fetchStats();
+  }, []);
+
+  const fetchStats = async () => {
+    try {
+      const jobsResponse = await axios.get(`${config.apiUrl}/api/recruitment/jobs/`);
+      const jobs = jobsResponse.data;
+
+      let totalCandidates = 0;
+      let totalScore = 0;
+      let scoreCount = 0;
+
+      for (const job of jobs) {
+        try {
+          const candidatesResponse = await axios.get(
+            `${config.apiUrl}/api/recruitment/jobs/${job.id}/candidates/`
+          );
+          const candidates = candidatesResponse.data;
+          totalCandidates += candidates.length;
+
+          candidates.forEach(candidate => {
+            if (candidate.score !== null && candidate.score !== undefined) {
+              totalScore += parseFloat(candidate.score);
+              scoreCount++;
+            }
+          });
+        } catch (error) {
+          if (job.candidate_count) {
+            totalCandidates += job.candidate_count;
+          }
+        }
+      }
+
+      setStats({
+        totalCandidates,
+        avgScore: scoreCount > 0 ? (totalScore / scoreCount).toFixed(0) : 0
+      });
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+    }
+  };
 
   const handleSignUpClick = () => {
     setRoleSelectionMode('signup');
@@ -250,14 +299,20 @@ export default function LandingPage() {
                   <div className="flex items-center justify-between mb-8">
                     <div>
                       <p className="text-gray-400 text-sm">Total Candidates</p>
-                      <p className="text-4xl font-bold">1,284</p>
+                      <p className="text-4xl font-bold">{stats.totalCandidates.toLocaleString()}</p>
                     </div>
                     <Users className="h-10 w-10 text-primary" />
                   </div>
                   <div className="h-2 bg-surface rounded-full overflow-hidden">
-                    <div className="h-full bg-primary w-3/4"></div>
+                    <motion.div 
+                      initial={{ width: 0 }}
+                      whileInView={{ width: `${Math.min(stats.avgScore, 100)}%` }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 1, delay: 0.5 }}
+                      className="h-full bg-primary"
+                    />
                   </div>
-                  <p className="mt-4 text-sm text-gray-400">75% Match Rate Improvement</p>
+                  <p className="mt-4 text-sm text-gray-400">{stats.avgScore}% Match Rate Improvement</p>
                 </div>
               </motion.div>
             </div>

@@ -36,7 +36,6 @@ export default function ResumeAnalyzer() {
     const [analyzing, setAnalyzing] = useState(false);
     const [analysis, setAnalysis] = useState(null);
     const [error, setError] = useState(null);
-    const [useUploadedResume, setUseUploadedResume] = useState(false);
     const [inputMode, setInputMode] = useState('file'); // 'file' or 'paste'
     const fileInputRef = useRef(null);
 
@@ -69,25 +68,13 @@ export default function ResumeAnalyzer() {
             if (file.type === 'application/pdf' || file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
                 setSelectedFile(file);
                 setError(null);
-                setUseUploadedResume(false);
             } else {
                 setError('Please upload a PDF or DOCX file');
             }
         }
     };
 
-    const handleUseUploadedResume = () => {
-        // Check if there's a previously uploaded resume in localStorage
-        const uploadedResume = localStorage.getItem('uploadedResume');
-        if (uploadedResume) {
-            const resumeData = JSON.parse(uploadedResume);
-            setSelectedFile({ name: resumeData.fileName, fromStorage: true, data: resumeData });
-            setUseUploadedResume(true);
-            setError(null);
-        } else {
-            setError('No previously uploaded resume found. Please upload a new file.');
-        }
-    };
+
 
     const extractTextFromFile = async (file) => {
         try {
@@ -134,9 +121,6 @@ export default function ResumeAnalyzer() {
             if (pastedText.trim()) {
                 // Use pasted text directly
                 resumeText = pastedText;
-            } else if (selectedFile.fromStorage) {
-                // Use the stored resume data
-                resumeText = selectedFile.data.extractedText || selectedFile.data.fileName;
             } else {
                 // Extract text from uploaded file using ML service
                 try {
@@ -294,9 +278,7 @@ export default function ResumeAnalyzer() {
                                 >
                                     <Upload className="h-12 w-12 text-gray-500 mx-auto mb-4" />
                                     <p className="text-lg font-medium mb-2">
-                                        {selectedFile && !selectedFile.fromStorage
-                                            ? selectedFile.name
-                                            : 'Click to upload resume'}
+                                        {selectedFile ? selectedFile.name : 'Click to upload resume'}
                                     </p>
                                     <p className="text-sm text-gray-500">PDF or DOCX format</p>
                                     <input
@@ -307,29 +289,6 @@ export default function ResumeAnalyzer() {
                                         className="hidden"
                                     />
                                 </div>
-
-                                {/* Or Divider */}
-                                <div className="flex items-center gap-4">
-                                    <div className="flex-1 h-px bg-gray-800"></div>
-                                    <span className="text-gray-500 text-sm">OR</span>
-                                    <div className="flex-1 h-px bg-gray-800"></div>
-                                </div>
-
-                                {/* Use Previously Uploaded Resume */}
-                                <button
-                                    onClick={handleUseUploadedResume}
-                                    className="w-full py-4 px-6 bg-dark border border-gray-700 rounded-xl hover:border-primary transition-colors duration-300 flex items-center justify-center gap-3"
-                                >
-                                    <FileText className="h-5 w-5 text-primary" />
-                                    <span>Use Previously Uploaded Resume</span>
-                                </button>
-
-                                {useUploadedResume && selectedFile && (
-                                    <div className="flex items-center gap-2 text-sm text-primary">
-                                        <CheckCircle className="h-4 w-4" />
-                                        <span>Using: {selectedFile.name}</span>
-                                    </div>
-                                )}
                             </>
                         ) : (
                             <>
@@ -420,7 +379,6 @@ export default function ResumeAnalyzer() {
                                     onClick={() => {
                                         setAnalysis(null);
                                         setSelectedFile(null);
-                                        setUseUploadedResume(false);
                                     }}
                                     className="px-6 py-3 bg-dark border border-gray-700 rounded-full hover:border-primary transition-colors duration-300"
                                 >

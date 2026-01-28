@@ -180,11 +180,59 @@ export default function CandidateDashboard() {
           ))}
         </div>
 
+        {/* Featured Stats Card - Applications */}
+        {stats.applicationsSubmitted > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="mb-8"
+          >
+            <div className="bg-gradient-to-br from-surface via-surface to-primary/5 border border-gray-800 rounded-2xl p-8 hover:border-primary/50 transition-all">
+              <div className="flex items-start justify-between mb-6">
+                <div>
+                  <p className="text-gray-400 text-sm font-medium mb-2">Your Applications</p>
+                  <h2 className="text-5xl md:text-6xl font-bold text-white">
+                    {stats.applicationsSubmitted}
+                  </h2>
+                </div>
+                <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center">
+                  <Send className="h-8 w-8 text-primary" />
+                </div>
+              </div>
+              
+              {/* Progress Bar */}
+              <div className="relative h-3 bg-gray-800 rounded-full overflow-hidden mb-3">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${Math.min(stats.avgMatchScore, 100)}%` }}
+                  transition={{ duration: 1, delay: 0.5, ease: "easeOut" }}
+                  className="absolute top-0 left-0 h-full bg-gradient-to-r from-primary via-yellow-400 to-primary rounded-full"
+                />
+              </div>
+              
+              <p className="text-gray-400 text-sm">
+                {stats.avgMatchScore}% Average Match Score
+                {stats.avgMatchScore >= 70 && (
+                  <span className="text-green-400 ml-2">
+                    ↑ Excellent match rate!
+                  </span>
+                )}
+                {stats.avgMatchScore >= 40 && stats.avgMatchScore < 70 && (
+                  <span className="text-yellow-400 ml-2">
+                    → Good potential
+                  </span>
+                )}
+              </p>
+            </div>
+          </motion.div>
+        )}
+
         {/* Quick Actions */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
+          transition={{ delay: stats.applicationsSubmitted > 0 ? 0.5 : 0.3 }}
           className="mb-8"
         >
           <h2 className="text-2xl font-bold text-white mb-4">Quick Actions</h2>
@@ -212,7 +260,7 @@ export default function CandidateDashboard() {
           ref={jobsRef}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
+          transition={{ delay: stats.applicationsSubmitted > 0 ? 0.7 : 0.5 }}
           className="bg-surface border border-gray-800 rounded-2xl p-6"
         >
           <div className="flex items-center justify-between mb-6">

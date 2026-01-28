@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Search, Briefcase, MapPin, Clock, DollarSign,
-    Building, CheckCircle, Filter, ChevronDown, X
+    Building, CheckCircle, Filter, ChevronDown, X,
+    Calendar, Users
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -20,7 +21,11 @@ export default function CandidateJobs() {
     // Filter States
     const [searchQuery, setSearchQuery] = useState('');
     const [filterStatus, setFilterStatus] = useState('all'); // 'all', 'open', 'applied'
-    const [sortBy, setSortBy] = useState('newest'); // 'newest', 'oldest'
+    const [filterDate, setFilterDate] = useState('any'); // 'any', '24h', '7d', '30d'
+    const [sortBy, setSortBy] = useState('newest'); // 'newest', 'oldest', 'most_applicants', 'least_applicants'
+    const [activeKeywords, setActiveKeywords] = useState([]);
+
+    const commonKeywords = ['Remote', 'Full-time', 'Developer', 'Designer', 'Manager'];
 
     useEffect(() => {
         if (currentUser) {
@@ -30,16 +35,14 @@ export default function CandidateJobs() {
 
     useEffect(() => {
         filterAndSortJobs();
-    }, [searchQuery, filterStatus, sortBy, jobs, applications]);
+    }, [searchQuery, filterStatus, filterDate, sortBy, activeKeywords, jobs, applications]);
 
     const fetchJobsAndApplications = async () => {
         try {
             setLoading(true);
-            // Fetch all available jobs
             const jobsResponse = await axios.get(`${config.apiUrl}/api/recruitment/jobs/`);
             const allJobs = jobsResponse.data;
 
-            // Fetch user's applications to check status
             const candidatesResponse = await axios.get(`${config.apiUrl}/api/recruitment/candidates/`);
             const userApplications = candidatesResponse.data.filter(
                 candidate => candidate.email === currentUser?.email
@@ -52,6 +55,14 @@ export default function CandidateJobs() {
         } finally {
             setLoading(false);
         }
+    };
+
+    const toggleKeyword = (keyword) => {
+        setActiveKeywords(prev =>
+            prev.includes(keyword)
+                ? prev.filter(k => k !== keyword)
+                : [...prev, keyword]
+        );
     };
 
     const filterAndSortJobs = () => {
@@ -77,11 +88,40 @@ export default function CandidateJobs() {
             });
         }
 
-        // 3. Sort
+        // 3. Date Posted Filter
+        if (filterDate !== 'any') {
+            const now = new Date();
+            result = result.filter(job => {
+                const jobDate = new Date(job.created_at);
+                const diffHours = (now - jobDate) / (1000 * 60 * 60);
+
+                if (filterDate === '24h') return diffHours <= 24;
+                if (filterDate === '7d') return diffHours <= 24 * 7;
+                if (filterDate === '30d') return diffHours <= 24 * 30;
+                return true;
+            });
+        }
+
+        // 4. Keywords Filter
+        if (activeKeywords.length > 0) {
+            result = result.filter(job => {
+                const text = `${job.title} ${job.description} ${job.requirements || ''}`.toLowerCase();
+                return activeKeywords.every(keyword => text.includes(keyword.toLowerCase()));
+            });
+        }
+
+        // 5. Sort
         result.sort((a, b) => {
             const dateA = new Date(a.created_at);
             const dateB = new Date(b.created_at);
-            return sortBy === 'newest' ? dateB - dateA : dateA - dateB;
+
+            switch (sortBy) {
+                case 'newest': return dateB - dateA;
+                case 'oldest': return dateA - dateB;
+                case 'most_applicants': return (b.candidate_count || 0) - (a.candidate_count || 0);
+                case 'least_applicants': return (a.candidate_count || 0) - (b.candidate_count || 0);
+                default: return dateB - dateA;
+            }
         });
 
         setFilteredJobs(result);
@@ -129,58 +169,106 @@ export default function CandidateJobs() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1 }}
-                    className="bg-surface border border-gray-800 rounded-2xl p-4 mb-8 sticky top-24 z-30 shadow-xl shadow-black/20"
+                    className="bg-surface border border-gray-800 rounded-2xl p-4 mb-4 sticky top-24 z-30 shadow-xl shadow-black/20"
                 >
-                    <div className="flex flex-col md:flex-row gap-4">
-                        {/* Search Input */}
-                        <div className="flex-1 relative">
-                            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-500" />
-                            <input
-                                type="text"
-                                placeholder="Search by job title, keyword, or company..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full pl-12 pr-4 py-3 bg-dark border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-primary transition-colors"
-                            />
-                            {searchQuery && (
-                                <button
-                                    onClick={() => setSearchQuery('')}
-                                    className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-white"
+                    <div className="flex flex-col gap-4">
+                        <div className="flex flex-col md:flex-row gap-4">
+                            {/* Search Input */}
+                            <div className="flex-1 relative">
+                                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-500" />
+                                <input
+                                    type="text"
+                                    placeholder="Search by job title, keyword, or company..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="w-full pl-12 pr-4 py-3 bg-dark border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-primary transition-colors"
+                                />
+                                {searchQuery && (
+                                    <button
+                                        onClick={() => setSearchQuery('')}
+                                        className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-white"
+                                    >
+                                        <X className="h-4 w-4" />
+                                    </button>
+                                )}
+                            </div>
+
+                            {/* Main Filter Dropdowns */}
+                            <div className="flex gap-2 overflow-x-auto pb-1 md:pb-0 no-scrollbar">
+                                <select
+                                    value={filterStatus}
+                                    onChange={(e) => setFilterStatus(e.target.value)}
+                                    className="px-4 py-3 bg-dark border border-gray-700 rounded-xl text-white focus:outline-none focus:border-primary cursor-pointer min-w-[140px]"
                                 >
-                                    <X className="h-4 w-4" />
-                                </button>
-                            )}
+                                    <option value="all">All Status</option>
+                                    <option value="open">Not Applied</option>
+                                    <option value="applied">Applied</option>
+                                </select>
+
+                                <select
+                                    value={filterDate}
+                                    onChange={(e) => setFilterDate(e.target.value)}
+                                    className="px-4 py-3 bg-dark border border-gray-700 rounded-xl text-white focus:outline-none focus:border-primary cursor-pointer min-w-[140px]"
+                                >
+                                    <option value="any">Any Time</option>
+                                    <option value="24h">Past 24 Hours</option>
+                                    <option value="7d">Past Week</option>
+                                    <option value="30d">Past Month</option>
+                                </select>
+
+                                <select
+                                    value={sortBy}
+                                    onChange={(e) => setSortBy(e.target.value)}
+                                    className="px-4 py-3 bg-dark border border-gray-700 rounded-xl text-white focus:outline-none focus:border-primary cursor-pointer min-w-[160px]"
+                                >
+                                    <option value="newest">Newest First</option>
+                                    <option value="oldest">Oldest First</option>
+                                    <option value="most_applicants">Most Popular</option>
+                                    <option value="least_applicants">Least Competition</option>
+                                </select>
+                            </div>
                         </div>
 
-                        {/* Filters */}
-                        <div className="flex gap-2 overflow-x-auto pb-1 md:pb-0">
-                            <select
-                                value={filterStatus}
-                                onChange={(e) => setFilterStatus(e.target.value)}
-                                className="px-4 py-3 bg-dark border border-gray-700 rounded-xl text-white focus:outline-none focus:border-primary cursor-pointer min-w-[140px]"
-                            >
-                                <option value="all">All Jobs</option>
-                                <option value="open">Not Applied</option>
-                                <option value="applied">Applied</option>
-                            </select>
-
-                            <select
-                                value={sortBy}
-                                onChange={(e) => setSortBy(e.target.value)}
-                                className="px-4 py-3 bg-dark border border-gray-700 rounded-xl text-white focus:outline-none focus:border-primary cursor-pointer min-w-[140px]"
-                            >
-                                <option value="newest">Newest First</option>
-                                <option value="oldest">Oldest First</option>
-                            </select>
+                        {/* Quick Keywords */}
+                        <div className="flex flex-wrap gap-2 items-center border-t border-gray-800 pt-3">
+                            <span className="text-gray-500 text-sm mr-1 flex items-center gap-1">
+                                <Filter className="h-3 w-3" /> Quick Filters:
+                            </span>
+                            {commonKeywords.map(keyword => (
+                                <button
+                                    key={keyword}
+                                    onClick={() => toggleKeyword(keyword)}
+                                    className={`px-3 py-1 rounded-full text-xs font-bold border transition-all ${activeKeywords.includes(keyword)
+                                            ? 'bg-primary text-dark border-primary'
+                                            : 'bg-dark text-gray-400 border-gray-700 hover:border-gray-500'
+                                        }`}
+                                >
+                                    {keyword}
+                                </button>
+                            ))}
                         </div>
                     </div>
                 </motion.div>
 
-                {/* Results Count */}
+                {/* Results Count & Active Filters */}
                 <div className="mb-6 flex items-center justify-between px-2">
                     <p className="text-gray-400">
                         Showing <span className="text-white font-bold">{filteredJobs.length}</span> jobs
                     </p>
+                    {(searchQuery || filterStatus !== 'all' || filterDate !== 'any' || activeKeywords.length > 0) && (
+                        <button
+                            onClick={() => {
+                                setSearchQuery('');
+                                setFilterStatus('all');
+                                setFilterDate('any');
+                                setSortBy('newest');
+                                setActiveKeywords([]);
+                            }}
+                            className="text-primary text-sm hover:underline"
+                        >
+                            Reset All Filters
+                        </button>
+                    )}
                 </div>
 
                 {/* Jobs Grid */}
@@ -239,13 +327,15 @@ export default function CandidateJobs() {
                                                     {formatTimeAgo(job.created_at)}
                                                 </div>
                                                 <div className="px-2 py-1 bg-dark rounded-md border border-gray-800 text-xs text-gray-400 flex items-center gap-1">
-                                                    <MapPin className="h-3 w-3" />
-                                                    Remote
+                                                    <Users className="h-3 w-3" />
+                                                    {job.candidate_count || 0} applicants
                                                 </div>
-                                                <div className="px-2 py-1 bg-dark rounded-md border border-gray-800 text-xs text-gray-400 flex items-center gap-1">
-                                                    <DollarSign className="h-3 w-3" />
-                                                    Competitive
-                                                </div>
+                                                {job.description.toLowerCase().includes('remote') && (
+                                                    <div className="px-2 py-1 bg-dark rounded-md border border-gray-800 text-xs text-gray-400 flex items-center gap-1">
+                                                        <MapPin className="h-3 w-3" />
+                                                        Remote
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
 
@@ -275,6 +365,9 @@ export default function CandidateJobs() {
                                     onClick={() => {
                                         setSearchQuery('');
                                         setFilterStatus('all');
+                                        setFilterDate('any');
+                                        setSortBy('newest');
+                                        setActiveKeywords([]);
                                     }}
                                     className="mt-6 px-6 py-2 bg-dark border border-gray-700 rounded-full text-primary hover:bg-gray-800 transition-colors"
                                 >

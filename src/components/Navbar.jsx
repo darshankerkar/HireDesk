@@ -45,7 +45,12 @@ export default function Navbar() {
             <div className="hidden sm:flex sm:space-x-8">
               <NavLink to="/" current={location.pathname}>Home</NavLink>
               {/* Upload Resume - Candidates use this to apply */}
-              {!isRecruiter && <NavLink to="/upload-resume" current={location.pathname}>Upload Resume</NavLink>}
+              {!isRecruiter && (
+                <>
+                  <NavLink to="/candidate-jobs" current={location.pathname}>Jobs</NavLink>
+                  <NavLink to="/upload-resume" current={location.pathname}>Upload Resume</NavLink>
+                </>
+              )}
               {/* Recruiter-only routes */}
               {isRecruiter && isPaid && (
                 <>
@@ -139,9 +144,14 @@ export default function Navbar() {
                 </MobileNavLink>
                 {/* Candidate - Upload Resume only */}
                 {!isRecruiter && (
-                  <MobileNavLink to="/upload-resume" current={location.pathname} onClick={handleNavClick}>
-                    Upload Resume
-                  </MobileNavLink>
+                  <>
+                    <MobileNavLink to="/candidate-jobs" current={location.pathname} onClick={handleNavClick}>
+                      Jobs
+                    </MobileNavLink>
+                    <MobileNavLink to="/upload-resume" current={location.pathname} onClick={handleNavClick}>
+                      Upload Resume
+                    </MobileNavLink>
+                  </>
                 )}
                 {/* Recruiter - All options */}
                 {isRecruiter && isPaid && (

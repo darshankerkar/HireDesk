@@ -14,6 +14,7 @@ import UploadResume from './pages/UploadResume';
 import BulkUpload from './pages/BulkUpload';
 import ResumeAnalyzer from './pages/ResumeAnalyzer';
 import LandingPage from './pages/LandingPage';
+import CandidateJobs from './pages/CandidateJobs';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 
 function AppContent() {
@@ -148,6 +149,13 @@ function AppContent() {
             ) : (
               <Navigate to="/upload-resume" replace />
             )
+          } />
+
+          {/* New Candidate Jobs Page */}
+          <Route path="/candidate-jobs" element={
+            <ProtectedRoute>
+              <CandidateJobs />
+            </ProtectedRoute>
           } />
 
           {/* Redirect invalid routes to home */}

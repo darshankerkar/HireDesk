@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Briefcase, FileText, Search, TrendingUp, 
+import {
+  Briefcase, FileText, Search, TrendingUp,
   CheckCircle, Clock, Send, Award, Users, MapPin, X, AlertCircle
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -36,7 +36,7 @@ export default function CandidateDashboard() {
     if (searchQuery.trim() === '') {
       setFilteredJobs(jobs);
     } else {
-      const filtered = jobs.filter(job => 
+      const filtered = jobs.filter(job =>
         job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         job.description.toLowerCase().includes(searchQuery.toLowerCase())
       );
@@ -49,7 +49,7 @@ export default function CandidateDashboard() {
       // Fetch all available jobs
       const jobsResponse = await axios.get(`${config.apiUrl}/api/recruitment/jobs/`);
       const allJobs = jobsResponse.data;
-      
+
       // Fetch user's applications (candidates uploaded for jobs)
       const candidatesResponse = await axios.get(`${config.apiUrl}/api/recruitment/candidates/`);
       const userApplications = candidatesResponse.data.filter(
@@ -117,7 +117,7 @@ export default function CandidateDashboard() {
       icon: Search,
       label: 'Browse Jobs',
       description: 'Find your next opportunity',
-      onClick: () => navigate('/upload-resume'),
+      onClick: () => navigate('/candidate-jobs'),
       color: 'bg-primary'
     },
     {
@@ -200,7 +200,7 @@ export default function CandidateDashboard() {
                   <Send className="h-8 w-8 text-primary" />
                 </div>
               </div>
-              
+
               {/* Progress Bar */}
               <div className="relative h-3 bg-gray-800 rounded-full overflow-hidden mb-3">
                 <motion.div
@@ -210,7 +210,7 @@ export default function CandidateDashboard() {
                   className="absolute top-0 left-0 h-full bg-gradient-to-r from-primary via-yellow-400 to-primary rounded-full"
                 />
               </div>
-              
+
               <p className="text-gray-400 text-sm">
                 {stats.avgMatchScore}% Average Match Score
                 {stats.avgMatchScore >= 70 && (
@@ -255,90 +255,7 @@ export default function CandidateDashboard() {
           </div>
         </motion.div>
 
-        {/* Latest Jobs with Search */}
-        <motion.div
-          ref={jobsRef}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: stats.applicationsSubmitted > 0 ? 0.7 : 0.5 }}
-          className="bg-surface border border-gray-800 rounded-2xl p-6"
-        >
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-white">Latest Job Openings</h2>
-          </div>
-
-          {/* Search Bar */}
-          <div className="relative mb-6">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-500" />
-            <input
-              type="text"
-              placeholder="Search jobs by title or description..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 bg-dark border border-gray-800 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-primary transition-colors"
-            />
-          </div>
-
-          {filteredJobs.length === 0 ? (
-            <div className="text-center py-12">
-              <Briefcase className="h-12 w-12 text-gray-600 mx-auto mb-4" />
-              <p className="text-gray-400">
-                {searchQuery ? 'No jobs found matching your search' : 'No jobs available at the moment'}
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {filteredJobs.map((job) => {
-                const hasApplied = applications.some(app => app.job === job.id);
-                return (
-                  <div
-                    key={job.id}
-                    className="p-4 bg-dark rounded-xl border border-gray-800 hover:border-primary/50 transition-all"
-                  >
-                    <div className="flex items-start justify-between mb-2">
-                      <div>
-                        <h3 className="font-bold text-white text-lg mb-1">{job.title}</h3>
-                        <p className="text-sm text-gray-400">{job.company || 'Company'}</p>
-                      </div>
-                      {hasApplied ? (
-                        <span className="px-3 py-1 bg-green-500/10 text-green-400 text-xs font-medium rounded-full">
-                          Applied
-                        </span>
-                      ) : (
-                        <span className="px-3 py-1 bg-primary/10 text-primary text-xs font-medium rounded-full">
-                          Open
-                        </span>
-                      )}
-                    </div>
-                    
-                    <p className="text-gray-300 text-sm mb-3 line-clamp-2">
-                      {job.description}
-                    </p>
-                    
-                    <div className="flex items-center justify-between text-sm">
-                      <div className="flex items-center gap-4 text-gray-400">
-                        <span className="flex items-center gap-1">
-                          <Clock className="h-4 w-4" />
-                          Full-time
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Users className="h-4 w-4" />
-                          {job.candidate_count || 0} Applicants
-                        </span>
-                      </div>
-                      <button 
-                        onClick={() => navigate('/upload-resume')}
-                        className="text-primary hover:text-white font-medium transition-colors"
-                      >
-                        {hasApplied ? 'View Application' : 'Apply Now'} →
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </motion.div>
+        {/* Latest Jobs Section Removed - Moved to dedicated page */}
 
         {/* Tips Section */}
         <motion.div

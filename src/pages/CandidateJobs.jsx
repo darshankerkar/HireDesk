@@ -9,10 +9,16 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import config from '../../config';
 import { useAuth } from '../contexts/AuthContext';
+import JobDetailsModal from '../components/JobDetailsModal';
 
 export default function CandidateJobs() {
     const navigate = useNavigate();
     const { currentUser } = useAuth();
+
+    // Modal State
+    const [selectedJob, setSelectedJob] = useState(null);
+    const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+
     const [jobs, setJobs] = useState([]);
     const [filteredJobs, setFilteredJobs] = useState([]);
     const [applications, setApplications] = useState([]);
@@ -147,6 +153,11 @@ export default function CandidateJobs() {
         );
     }
 
+    const handleJobClick = (job) => {
+        setSelectedJob(job);
+        setIsDetailsModalOpen(true);
+    };
+
     return (
         <div className="min-h-screen bg-dark text-secondary py-8 px-4 font-sans">
             <div className="max-w-7xl mx-auto">
@@ -239,8 +250,8 @@ export default function CandidateJobs() {
                                     key={keyword}
                                     onClick={() => toggleKeyword(keyword)}
                                     className={`px-3 py-1 rounded-full text-xs font-bold border transition-all ${activeKeywords.includes(keyword)
-                                            ? 'bg-primary text-dark border-primary'
-                                            : 'bg-dark text-gray-400 border-gray-700 hover:border-gray-500'
+                                        ? 'bg-primary text-dark border-primary'
+                                        : 'bg-dark text-gray-400 border-gray-700 hover:border-gray-500'
                                         }`}
                                 >
                                     {keyword}
@@ -285,7 +296,8 @@ export default function CandidateJobs() {
                                         animate={{ opacity: 1, scale: 1 }}
                                         exit={{ opacity: 0, scale: 0.9 }}
                                         transition={{ delay: index * 0.05 }}
-                                        className="bg-surface rounded-2xl border border-gray-800 p-6 hover:border-primary/50 transition-all hover:shadow-lg hover:shadow-primary/5 group relative flex flex-col h-full"
+                                        onClick={() => handleJobClick(job)}
+                                        className="bg-surface rounded-2xl border border-gray-800 p-6 hover:border-primary/50 transition-all hover:shadow-lg hover:shadow-primary/5 group relative flex flex-col h-full cursor-pointer"
                                     >
                                         {/* Badge */}
                                         <div className="absolute top-4 right-4">
@@ -341,10 +353,13 @@ export default function CandidateJobs() {
 
                                         {/* Action Button */}
                                         <button
-                                            onClick={() => navigate('/upload-resume')}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                navigate('/upload-resume');
+                                            }}
                                             className={`w-full py-3 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 ${hasApplied
-                                                    ? 'bg-dark border border-gray-700 text-gray-300 hover:bg-gray-800'
-                                                    : 'bg-primary text-dark hover:bg-white hover:scale-[1.02]'
+                                                ? 'bg-dark border border-gray-700 text-gray-300 hover:bg-gray-800'
+                                                : 'bg-primary text-dark hover:bg-white hover:scale-[1.02]'
                                                 }`}
                                         >
                                             {hasApplied ? 'View Application' : 'Apply Now'}
@@ -377,6 +392,15 @@ export default function CandidateJobs() {
                         )}
                     </AnimatePresence>
                 </div>
+
+                {/* Job Details Modal */}
+                <JobDetailsModal
+                    isOpen={isDetailsModalOpen}
+                    onClose={() => setIsDetailsModalOpen(false)}
+                    job={selectedJob}
+                    onApply={() => navigate('/upload-resume')}
+                    hasApplied={selectedJob ? applications.some(app => app.job === selectedJob.id) : false}
+                />
             </div>
         </div>
     );

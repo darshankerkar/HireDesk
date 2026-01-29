@@ -410,24 +410,11 @@ export default function LandingPage() {
             style={{ opacity: heroOpacity, scale: heroScale, y: heroY }}
             className="container mx-auto px-6 relative z-10 text-center max-w-5xl"
           >
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              transition={{ delay: 0.2, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-              className="mb-8"
-            >
-              <div className="text-6xl md:text-8xl font-display font-bold text-white tracking-[-0.03em]">
-                Hire<span className="text-primary">Desk</span>
-              </div>
-            </motion.div>
-
-
-
             <motion.h1
               initial={{ opacity: 0, y: 40 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 1, ease: [0.16, 1, 0.3, 1] }}
-              className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-display font-bold mb-8 tracking-[-0.03em] leading-[1.1] text-white"
+              className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-display font-bold mb-8 tracking-[-0.03em] leading-[1.1] text-white"
             >
               Recruitment built for <br />
               the <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-white to-primary bg-[length:200%_auto] animate-gradient-slow">AI era.</span>
@@ -483,27 +470,24 @@ export default function LandingPage() {
               transition={{ delay: 0.6, duration: 1.5, ease: "easeOut" }}
               className="relative w-full aspect-[16/10] mx-auto perspective-[2000px]"
             >
-              {/* Refined Backlight/Glow */}
+              {/* Refined Backlight/Glow - Neon color */}
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[80%] bg-primary/20 blur-[120px] -z-10 rounded-full mix-blend-screen" />
 
               {/* Main Container with Gradient Mask */}
               <div
-                className="relative w-full h-full rounded-xl overflow-hidden bg-[#0a0a0a] border border-white/10 shadow-2xl"
+                className="relative w-full h-full rounded-xl overflow-hidden bg-dark border border-gray-800 shadow-2xl"
                 style={{
                   maskImage: 'linear-gradient(to bottom, black 40%, transparent 95%)',
                   WebkitMaskImage: 'linear-gradient(to bottom, black 40%, transparent 95%)'
                 }}
               >
-                {/* Window Controls */}
-                <div className="absolute top-0 left-0 right-0 h-10 bg-[#0a0a0a]/80 backdrop-blur-md border-b border-white/5 flex items-center px-4 gap-2 z-20">
-                  <div className="w-3 h-3 rounded-full bg-[#FF5F56]/80" />
-                  <div className="w-3 h-3 rounded-full bg-[#FFBD2E]/80" />
-                  <div className="w-3 h-3 rounded-full bg-[#27C93F]/80" />
-                  <div className="mx-auto text-xs text-gray-500 font-medium tracking-wide">Job Dashboard</div>
+                {/* Simple header bar without mac dots */}
+                <div className="absolute top-0 left-0 right-0 h-10 bg-surface/80 backdrop-blur-md border-b border-gray-800 flex items-center justify-center z-20">
+                  <div className="text-xs text-gray-500 font-medium tracking-wide">Job Dashboard</div>
                 </div>
 
                 {/* Image Content */}
-                <div className="w-full h-full pt-10 bg-[#080808]">
+                <div className="w-full h-full pt-10 bg-dark">
                   <img
                     src="/jobs.png"
                     alt="HireDesk Dashboard Interface"
@@ -515,7 +499,7 @@ export default function LandingPage() {
                 </div>
               </div>
 
-              {/* Reflection/Ground Glow */}
+              {/* Reflection/Ground Glow - Neon color */}
               <div
                 className="absolute -bottom-20 left-0 right-0 h-40 bg-gradient-to-t from-primary/10 to-transparent blur-3xl opacity-30 pointer-events-none"
                 style={{ transform: 'rotateX(180deg) scaleY(0.5)' }}
@@ -527,7 +511,7 @@ export default function LandingPage() {
 
 
         {/* Login Required Notice */}
-        <section className="py-32 bg-white/[0.02] backdrop-blur-sm border-y border-white/5 relative overflow-hidden">
+        <section className="py-32 bg-surface backdrop-blur-sm border-y border-gray-800 relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-primary/5"></div>
           <div className="container mx-auto px-6 relative z-10 max-w-5xl">
             <motion.div
@@ -564,8 +548,7 @@ export default function LandingPage() {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ delay: index * 0.15, duration: 0.6 }}
-                    whileHover={{ scale: 1.05, y: -2 }}
-                    className="flex items-center gap-3 text-gray-300 bg-white/5 px-6 py-3 rounded-full border border-white/10 hover:border-primary/30 transition-all duration-300 backdrop-blur-sm"
+                    className="flex items-center gap-3 text-gray-300 bg-dark px-6 py-3 rounded-full border border-gray-800 hover:border-primary transition-colors duration-300"
                   >
                     <item.icon className="h-5 w-5 text-primary" />
                     <span className="font-medium">{item.text}</span>
@@ -577,19 +560,19 @@ export default function LandingPage() {
         </section>
 
         {/* Features Section */}
-        <section className="py-40 bg-[#0a0a0a] relative">
+        <section className="py-24 bg-surface">
           <div className="container mx-auto px-6 max-w-7xl">
             <motion.div
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true, margin: "-150px" }}
               variants={fadeInUp}
-              className="text-center mb-24"
+              className="text-center mb-16"
             >
-              <h2 className="text-6xl md:text-7xl font-display font-bold mb-6 tracking-[-0.03em] bg-gradient-to-b from-white via-white to-gray-600 bg-clip-text text-transparent">
+              <h2 className="text-5xl md:text-6xl font-display font-bold mb-6 tracking-[-0.03em] text-white">
                 Powerful Features
               </h2>
-              <p className="text-2xl text-gray-500 tracking-wide">
+              <p className="text-xl text-gray-400 tracking-wide">
                 Everything you need to streamline your recruitment process
               </p>
             </motion.div>
@@ -599,64 +582,54 @@ export default function LandingPage() {
               whileInView="visible"
               viewport={{ once: true, margin: "-100px" }}
               variants={staggerContainer}
-              className="grid grid-cols-1 md:grid-cols-3 gap-6"
+              className="grid grid-cols-1 md:grid-cols-3 gap-12"
             >
               {[
                 {
                   icon: Upload,
                   title: 'Resume Parsing',
                   description: 'Instantly extract structured data from PDF and DOCX files using advanced NLP.',
-                  gradient: 'from-blue-500/20 to-primary/20'
                 },
                 {
                   icon: Cpu,
                   title: 'AI Scoring',
                   description: 'Automatically rank candidates based on job description relevance using vector embeddings.',
-                  gradient: 'from-purple-500/20 to-primary/20'
                 },
                 {
                   icon: FileSpreadsheet,
                   title: 'Bulk Upload',
                   description: 'Upload multiple candidates at once using CSV or Excel files for rapid processing.',
-                  gradient: 'from-pink-500/20 to-primary/20',
                   badge: 'PAID'
                 }
               ].map((feature, index) => (
-                <SpotlightCard key={index} className="group p-10 h-full">
-                  <div
-                    className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-700`}
-                  />
-                  <div className="relative z-10 h-full flex flex-col">
-                    {feature.badge && (
-                      <div className="absolute top-0 right-0 px-3 py-1.5 bg-primary text-black text-xs font-bold rounded-full">
-                        {feature.badge}
-                      </div>
-                    )}
-                    <motion.div
-                      whileHover={{ scale: 1.15, rotate: 10 }}
-                      transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                      className="inline-flex items-center justify-center w-20 h-20 bg-primary/10 rounded-2xl mb-8 group-hover:bg-primary/20 transition-colors duration-500 border border-primary/20"
-                    >
-                      <feature.icon className="h-10 w-10 text-primary" />
-                    </motion.div>
-                    <h3 className="text-2xl font-bold mb-4 group-hover:text-primary transition-colors duration-300 tracking-tight">{feature.title}</h3>
-                    <p className="text-gray-400 leading-relaxed text-lg">{feature.description}</p>
-                  </div>
-                </SpotlightCard>
+                <motion.div 
+                  key={index} 
+                  variants={fadeInUp} 
+                  className="relative p-8 bg-dark rounded-2xl border border-gray-800 hover:border-primary transition-colors duration-300"
+                >
+                  {feature.badge && (
+                    <div className="absolute top-4 right-4 px-2 py-1 bg-primary text-dark text-xs font-bold rounded">
+                      {feature.badge}
+                    </div>
+                  )}
+                  <feature.icon className="h-12 w-12 text-primary mb-6" />
+                  <h3 className="text-2xl font-bold mb-4">{feature.title}</h3>
+                  <p className="text-gray-400">{feature.description}</p>
+                </motion.div>
               ))}
             </motion.div>
           </div>
         </section>
 
         {/* Product Showcase Section */}
-        <section className="py-40 bg-[#0a0a0a] relative overflow-hidden">
+        <section className="py-24 bg-dark relative overflow-hidden">
           <div className="container mx-auto px-6 max-w-7xl">
             <motion.div
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true, margin: "-150px" }}
               variants={fadeInUp}
-              className="text-center mb-32"
+              className="text-center mb-16"
             >
               <h2 className="text-4xl md:text-5xl font-display font-bold mb-6 tracking-[-0.03em]">
                 Built for speed and precision
@@ -666,7 +639,7 @@ export default function LandingPage() {
               </p>
             </motion.div>
 
-            <div className="space-y-40">
+            <div className="space-y-24">
               <ProductMockup
                 imageSrc="/resumeanalyzer.png"
                 title="AI Resume Intelligence"
@@ -685,17 +658,21 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* CTA Section */}
-        <section className="py-32 bg-gradient-to-b from-white/[0.02] to-[#0a0a0a] relative overflow-hidden border-t border-white/5">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent"></div>
+        {/* CTA Section - Neon-ish background */}
+        <section className="py-24 relative overflow-hidden">
+          {/* Neon background effect */}
+          <div className="absolute inset-0 bg-dark"></div>
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-primary/20 via-primary/5 to-transparent"></div>
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-primary/30 blur-[150px] rounded-full"></div>
+          
           <div className="container mx-auto px-6 relative z-10 max-w-4xl text-center">
             <motion.h2
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="text-5xl md:text-7xl font-display font-bold mb-8 tracking-[-0.03em]"
+              className="text-5xl md:text-6xl font-display font-bold mb-8 tracking-[-0.03em]"
             >
-              Ready to automate <br /> your hiring?
+              Ready to automate <br />your hiring?
             </motion.h2>
             <motion.p
               initial={{ opacity: 0, y: 20 }}
@@ -715,7 +692,7 @@ export default function LandingPage() {
             >
               <button
                 onClick={handleSignUpClick}
-                className="group relative inline-flex items-center px-10 py-5 bg-primary text-black font-bold text-lg rounded-full hover:bg-white transition-all duration-300"
+                className="group relative inline-flex items-center px-10 py-5 bg-primary text-dark font-bold text-lg rounded-full hover:bg-white transition-all duration-300"
               >
                 Start Free Trial
                 <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
@@ -724,24 +701,10 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Footer */}
-        <footer className="py-20 bg-[#0a0a0a] border-t border-white/5 text-sm">
-          <div className="container mx-auto px-6">
-            <div className="flex flex-col md:flex-row justify-between items-center gap-8">
-              <div className="flex items-center gap-2 text-white font-bold text-xl">
-                Hire<span className="text-primary">Desk</span>
-              </div>
-              <div className="flex gap-8 text-gray-500">
-                <a href="#" className="hover:text-white transition-colors">Features</a>
-                <a href="#" className="hover:text-white transition-colors">Method</a>
-                <a href="#" className="hover:text-white transition-colors">Customers</a>
-                <a href="#" className="hover:text-white transition-colors">Pricing</a>
-                <a href="#" className="hover:text-white transition-colors">Changelog</a>
-              </div>
-              <div className="text-gray-600">
-                © 2024 HireDesk Inc.
-              </div>
-            </div>
+        {/* Footer - Simple like Home page */}
+        <footer className="py-12 bg-surface border-t border-gray-800">
+          <div className="container mx-auto px-6 text-center">
+            <p className="text-gray-500">© 2024 HireDesk. All rights reserved.</p>
           </div>
         </footer>
       </div>

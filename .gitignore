@@ -3,6 +3,7 @@
 .env.local
 .env.*.local
 .env.production
+recovered_env.txt
 
 # Logs
 logs

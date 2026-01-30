@@ -55,9 +55,17 @@ export default function CandidateJobs() {
             const allJobs = jobsResponse.data;
 
             const candidatesResponse = await axios.get(`${config.apiUrl}/api/recruitment/candidates/`);
+            
+            // Case-insensitive email comparison
+            const userEmail = currentUser?.email?.toLowerCase();
             const userApplications = candidatesResponse.data.filter(
-                candidate => candidate.email === currentUser?.email
+                candidate => candidate.email?.toLowerCase() === userEmail
             );
+
+            console.log('Current user email:', currentUser?.email);
+            console.log('Total candidates:', candidatesResponse.data.length);
+            console.log('User applications found:', userApplications.length);
+            console.log('User applications:', userApplications);
 
             setJobs(allJobs);
             setApplications(userApplications);

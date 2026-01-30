@@ -32,7 +32,14 @@ export default function CandidateJobs() {
     const [sortBy, setSortBy] = useState('newest');
 
     useEffect(() => {
-        if (currentUser) {
+        // Redirect recruiters to dashboard - this page is for candidates only
+        if (currentUser && currentUser.role === 'RECRUITER') {
+            navigate('/dashboard');
+        }
+    }, [currentUser, navigate]);
+
+    useEffect(() => {
+        if (currentUser && currentUser.role === 'CANDIDATE') {
             fetchJobsAndApplications();
         }
     }, [currentUser]);

@@ -35,14 +35,14 @@ export default function CandidateJobs() {
         // Redirect recruiters to dashboard - this page is for candidates only
         if (currentUser && currentUser.role === 'RECRUITER') {
             navigate('/dashboard');
+            return; // Don't fetch data if redirecting
         }
-    }, [currentUser, navigate]);
-
-    useEffect(() => {
-        if (currentUser && currentUser.role === 'CANDIDATE') {
+        
+        // Fetch data for candidates or when user is loaded
+        if (currentUser) {
             fetchJobsAndApplications();
         }
-    }, [currentUser]);
+    }, [currentUser, navigate]);
 
     useEffect(() => {
         filterAndSortJobs();

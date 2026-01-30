@@ -90,6 +90,16 @@ export default function UploadResume() {
         origin: { y: 0.6 }
       });
 
+      // Track application in localStorage for frontend filtering
+      if (currentUser?.email) {
+        const storageKey = `applications_${currentUser.email}`;
+        const existingApplications = JSON.parse(localStorage.getItem(storageKey) || '[]');
+        if (!existingApplications.includes(parseInt(selectedJob))) {
+          existingApplications.push(parseInt(selectedJob));
+          localStorage.setItem(storageKey, JSON.stringify(existingApplications));
+        }
+      }
+
       setUploadStatus({
         type: 'success',
         message: currentUser?.role === 'CANDIDATE' 

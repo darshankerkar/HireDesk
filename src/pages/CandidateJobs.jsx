@@ -54,21 +54,17 @@ export default function CandidateJobs() {
             const jobsResponse = await axios.get(`${config.apiUrl}/api/recruitment/jobs/`);
             const allJobs = jobsResponse.data;
 
-            const candidatesResponse = await axios.get(`${config.apiUrl}/api/recruitment/candidates/`);
+            // Get applications from localStorage instead of backend
+            const storageKey = `applications_${currentUser?.email}`;
+            const appliedJobIds = JSON.parse(localStorage.getItem(storageKey) || '[]');
             
-            // Case-insensitive email comparison
-            const userEmail = currentUser?.email?.toLowerCase();
-            const userApplications = candidatesResponse.data.filter(
-                candidate => candidate.email?.toLowerCase() === userEmail
-            );
-
             console.log('Current user email:', currentUser?.email);
-            console.log('Total candidates:', candidatesResponse.data.length);
-            console.log('User applications found:', userApplications.length);
-            console.log('User applications:', userApplications);
+            console.log('Applied job IDs from localStorage:', appliedJobIds);
+            console.log('Total jobs:', allJobs.length);
 
             setJobs(allJobs);
-            setApplications(userApplications);
+            // Store as array of objects to match previous structure
+            setApplications(appliedJobIds.map(jobId => ({ job: jobId })));
         } catch (error) {
             console.error('Error fetching data:', error);
         } finally {

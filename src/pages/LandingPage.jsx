@@ -175,7 +175,8 @@ const SplineBackground = () => {
         const radius = width * 0.4;
 
         const gradient = ctx.createRadialGradient(x, y, 0, x, y, radius);
-        gradient.addColorStop(0, `hsla(${60 + i * 20}, 70%, 60%, 0.05)`);
+        // Changed from green (60-80) to neon yellow (55-65) to match theme
+        gradient.addColorStop(0, `hsla(${55 + i * 2}, 80%, 65%, 0.05)`);
         gradient.addColorStop(1, 'transparent');
 
         ctx.fillStyle = gradient;
@@ -658,12 +659,15 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* CTA Section - Neon-ish background */}
+        {/* CTA Section - Animated background like hero */}
         <section className="py-24 relative overflow-hidden">
-          {/* Neon background effect */}
+          {/* Animated gradient background */}
           <div className="absolute inset-0 bg-dark"></div>
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-primary/20 via-primary/5 to-transparent"></div>
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-primary/30 blur-[150px] rounded-full"></div>
+          <SplineBackground />
+          
+          {/* Additional glow for emphasis */}
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-primary/15 via-primary/5 to-transparent"></div>
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-primary/20 blur-[150px] rounded-full"></div>
           
           <div className="container mx-auto px-6 relative z-10 max-w-4xl text-center">
             <motion.h2

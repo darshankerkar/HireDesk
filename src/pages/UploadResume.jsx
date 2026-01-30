@@ -92,15 +92,25 @@ export default function UploadResume() {
 
       setUploadStatus({
         type: 'success',
-        message: 'Resume uploaded and processed successfully! Redirecting...'
+        message: currentUser?.role === 'CANDIDATE' 
+          ? 'Resume uploaded and processed successfully! Redirecting...' 
+          : 'Resume uploaded and processed successfully!'
       });
       setUploadedFile(null);
       setSelectedJob('');
 
-      // Redirect to jobs page after 1.5 seconds to show success message
-      setTimeout(() => {
-        navigate('/candidate-jobs');
-      }, 1500);
+      // Only redirect candidates to check their application status
+      // Recruiters stay on the upload page to continue uploading resumes
+      if (currentUser?.role === 'CANDIDATE') {
+        setTimeout(() => {
+          navigate('/candidate-jobs');
+        }, 1500);
+      } else {
+        // For recruiters, just refresh the form after 2 seconds to allow uploading more resumes
+        setTimeout(() => {
+          setUploadStatus(null);
+        }, 3000);
+      }
     } catch (error) {
       setUploadStatus({
         type: 'error',

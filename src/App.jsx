@@ -21,19 +21,52 @@ function AppContent() {
   const { currentUser } = useAuth();
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [verifyingRole, setVerifyingRole] = useState(false);
 
   useEffect(() => {
     // Load user data from localStorage
     const storedUserData = localStorage.getItem('userData');
     if (storedUserData) {
-      setUserData(JSON.parse(storedUserData));
+      const parsedData = JSON.parse(storedUserData);
+      
+      // Simulate backend role verification for recruiters
+      if (parsedData.role === 'RECRUITER' && !parsedData.is_paid) {
+        setVerifyingRole(true);
+        setTimeout(() => {
+          setUserData(parsedData);
+          setVerifyingRole(false);
+          setLoading(false);
+        }, 2000); // 2 second delay for role verification
+      } else {
+        setUserData(parsedData);
+        setLoading(false);
+      }
+    } else {
+      setLoading(false);
     }
-    setLoading(false);
   }, [currentUser]);
 
   // Show landing page if user is not logged in
   if (!currentUser || !userData) {
     return <LandingPage />;
+  }
+
+  // Role verification loading state
+  if (verifyingRole) {
+    return (
+      <div className="min-h-screen bg-dark flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-6" />
+          <h2 className="text-2xl font-bold text-white mb-2">Verifying Role</h2>
+          <p className="text-gray-400">Checking your account credentials...</p>
+          <div className="mt-4 flex items-center justify-center gap-2">
+            <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+            <div className="w-2 h-2 bg-primary rounded-full animate-pulse" style={{ animationDelay: '0.2s' }} />
+            <div className="w-2 h-2 bg-primary rounded-full animate-pulse" style={{ animationDelay: '0.4s' }} />
+          </div>
+        </div>
+      </div>
+    );
   }
 
   // Loading state

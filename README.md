@@ -1,100 +1,101 @@
 # HireDesk
 
-HireDesk is an AI-assisted recruitment platform for modern hiring teams. It helps recruiters publish jobs, manage candidate pipelines, schedule interviews, and review applications from a fast, polished frontend experience.
+HireDesk is a modern and easy-to-use job and hiring management platform. It helps recruiters post job openings and manage applications, while job seekers can explore opportunities and track their application status seamlessly.
 
-[Watch the product demo](https://youtu.be/nMn61d0CL9M?si=UHnCBwC23nRiR8pK)
+**Watch the HireDesk Demo Video**
+[![HireDesk Demo Video](https://img.youtube.com/vi/CIT34qZeYtQ/maxresdefault.jpg)](https://youtu.be/CIT34qZeYtQ)
 
-## What HireDesk Covers
+---
 
-- Recruiter-facing job creation and application management
-- Candidate job discovery and application tracking
-- Email verification and authentication flows
-- Resume analysis and AI-assisted guidance
-- Interview scheduling and browser-based interview experiences
-- Pricing, legal, and onboarding flows for production deployment
+## Overview
 
-## Product Highlights
+HireDesk simplifies the recruitment process for both recruiters and applicants.
+* **Recruiters** can manage job postings and review applications efficiently.
+* **Applicants** can apply to jobs and monitor their progress in real time.
+The platform aims to make hiring transparent, organized, and accessible.
 
-- Clean recruiter dashboard for posting and managing roles
-- Candidate dashboard with application visibility and status tracking
-- Frontend-first UX built for speed on desktop and mobile
-- AI-powered resume and assistant experiences
-- Interview room components, video-call UI, and proctoring-related flows
-- Vercel-compatible serverless endpoints for Gemini-backed features
+---
+
+## Features
+
+- **User Authentication** – Secure login for recruiters and applicants via JWT.
+- **Job Posting & Management** – Recruiters can create, update, and manage job listings.
+- **Job Application System** – Applicants can apply and track application status.
+- **Status Tracking** – View application progress (Applied, Shortlisted, Rejected).
+- **Responsive UI** – Works smoothly across desktop and mobile devices.
+- **Database Integration** – Secure storage of jobs and application data using PostgreSQL.
+
+---
 
 ## Tech Stack
 
-- React 19
-- Vite
-- Tailwind CSS
-- Axios
-- Firebase Auth
-- Framer Motion
-- PeerJS
-- Google Generative AI SDK
+- **Frontend:** React + Vite
+- **UI Styling:** Tailwind CSS + Bootstrap
+- **Backend:** Django + Django REST Framework
+- **Database:** PostgreSQL (Neon)
+- **Authentication:** Firebase Auth
+- **Deployment:** Vercel (Frontend)
 
-## Demo
+---
 
-The latest demo is available here:
-
-- `https://youtu.be/nMn61d0CL9M?si=UHnCBwC23nRiR8pK`
-
-## Local Development
+## Installation & Setup
 
 ```bash
-git clone https://github.com/darshankerkar/HireDesk.git
-cd HireDesk
+# Clone the repository
+git clone [https://github.com/](https://github.com/)<your-username>/hiredesk.git
+cd hiredesk
+
+# --- Frontend Setup ---
 npm install
-npm run dev
+npm run dev # Runs at http://localhost:5173
+
+# --- Backend Setup ---
+cd backend
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py runserver # Runs at [http://127.0.0.1:8000](http://127.0.0.1:8000)
 ```
 
-The app starts locally on `http://localhost:5173` by default.
+---
 
-## Environment
+## User Guidelines
 
-Create a local `.env` file for frontend-only configuration. Typical variables include:
+* **Sign Up / Log In** – Create an account as a recruiter or applicant.
+* **Browse Jobs** – Explore available job opportunities.
+* **Post or Apply** – Recruiters post jobs; applicants apply to relevant roles.
+* **Track Status** – Monitor application progress in real time.
+* **Manage Listings** – Recruiters can review and manage applications easily.
 
-```bash
-VITE_API_URL=http://localhost:8000
-VITE_FIREBASE_API_KEY=your_firebase_api_key
-VITE_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
-VITE_FIREBASE_PROJECT_ID=your-project-id
-VITE_FIREBASE_STORAGE_BUCKET=your-project.appspot.com
-VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
-VITE_FIREBASE_APP_ID=your_app_id
-```
+---
 
-Server-side Gemini routes should use server environment variables rather than exposing model keys in the browser bundle.
+## Future Enhancements
 
-## Deployment
+- [ ] Advanced job filtering and search.
+- [ ] Recruiter analytics dashboard.
+- [ ] Email notifications for application updates.
+- [ ] Role-based access control (RBAC).
+- [ ] Resume upload and management.
 
-This public repository is the frontend-facing codebase. Backend and ML services are maintained separately.
-
-Typical deployment flow:
-
-1. Configure frontend environment variables.
-2. Point `VITE_API_URL` at the deployed backend.
-3. Deploy the app to Vercel or another static/frontend hosting platform.
-4. Configure server-side Gemini environment variables for API routes.
-
-## Repository Scope
-
-This repository contains the public frontend application only.
-
-Private services are managed separately:
-
-- Backend service
-- ML service
+---
 
 ## Contributing
 
-If you want to contribute:
+Contributions are welcome! Follow these steps to contribute:
 
-1. Fork the repository.
-2. Create a feature branch.
-3. Make focused changes with clear commit messages.
-4. Open a pull request with context, screenshots, and testing notes when relevant.
+1.  **Fork the Repository** to your own account.
+2.  **Clone Your Fork**:  
+    `git clone https://github.com/<your-username>/hiredesk.git`
+3.  **Create a New Branch**:  
+    `git checkout -b feature/your-feature-name`
+4.  **Commit & Push**:
+    ```bash
+    git add .
+    git commit -m "Brief description of changes"
+    git push origin feature/your-feature-name
+    ```
+5.  **Submit a Pull Request** via GitHub.
 
-## License
+---
 
-See [LICENSE](LICENSE).
+## 🔗 Live Preview
+https://hire-desk.vercel.app

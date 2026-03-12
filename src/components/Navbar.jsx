@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import LoginModal from './LoginModal';
 import SignUpModal from './SignUpModal';
 import { useAuth } from '../contexts/AuthContext';
+import { useBranding } from '../contexts/BrandingContext';
 
 export default function Navbar() {
   const location = useLocation();
@@ -12,6 +13,7 @@ export default function Navbar() {
   const [signUpModalOpen, setSignUpModalOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { currentUser, logout } = useAuth();
+  const brand = useBranding();
   const [userData, setUserData] = useState(null);
 
   useEffect(() => {
@@ -23,6 +25,22 @@ export default function Navbar() {
 
   const isRecruiter = userData?.role === 'RECRUITER';
   const isPaid = userData?.is_paid;
+  const isLoggedIn = Boolean(currentUser || userData);
+  const displayEmail = currentUser?.email || userData?.email || '';
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (e) {
+      // Fallback clear for backend-token-only sessions.
+      localStorage.removeItem('userData');
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('refresh_token');
+      localStorage.removeItem('firebaseUser');
+    } finally {
+      window.location.href = '/';
+    }
+  };
 
   // Close mobile menu when route changes
   const handleNavClick = () => {
@@ -37,7 +55,7 @@ export default function Navbar() {
             {/* Logo */}
             <div className="flex-shrink-0 flex items-center">
               <Link to="/" className="text-3xl font-display font-bold text-white tracking-tighter">
-                Hire<span className="text-primary">Desk</span>
+                {brand.appNameParts.first}<span className="text-primary">{brand.appNameParts.highlight}</span>
               </Link>
             </div>
 
@@ -67,11 +85,11 @@ export default function Navbar() {
 
             {/* Desktop Auth Buttons */}
             <div className="hidden sm:flex items-center gap-3">
-              {currentUser ? (
+              {isLoggedIn ? (
                 <>
-                  <span className="text-gray-400 text-sm">{currentUser.email}</span>
+                  <span className="text-gray-400 text-sm">{displayEmail}</span>
                   <button
-                    onClick={logout}
+                    onClick={handleLogout}
                     className="px-5 py-2 rounded-full bg-surface text-white text-sm font-medium hover:bg-primary hover:text-dark transition-colors duration-300 border border-gray-700 hover:border-primary"
                   >
                     Logout
@@ -177,14 +195,14 @@ export default function Navbar() {
                 </MobileNavLink>
 
                 {/* Mobile Auth Section */}
-                {currentUser ? (
+                {isLoggedIn ? (
                   <div className="pt-4 border-t border-gray-800 space-y-2">
                     <div className="text-gray-400 text-sm px-3 py-2">
-                      {currentUser.email}
+                      {displayEmail}
                     </div>
                     <button
                       onClick={() => {
-                        logout();
+                        handleLogout();
                         handleNavClick();
                       }}
                       className="w-full px-4 py-3 rounded-lg bg-surface text-white text-sm font-medium hover:bg-primary hover:text-dark transition-colors duration-300 border border-gray-700"

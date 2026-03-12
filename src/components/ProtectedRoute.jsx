@@ -7,6 +7,10 @@ import { useAuth } from '../contexts/AuthContext';
  */
 export default function ProtectedRoute({ children }) {
   const { currentUser, loading } = useAuth();
+  const hasBackendSession = !!(
+    localStorage.getItem('access_token') &&
+    localStorage.getItem('userData')
+  );
 
   // Show loading state while checking authentication
   if (loading) {
@@ -21,7 +25,7 @@ export default function ProtectedRoute({ children }) {
   }
 
   // If not authenticated, redirect to home page
-  if (!currentUser) {
+  if (!currentUser && !hasBackendSession) {
     return <Navigate to="/" replace />;
   }
 

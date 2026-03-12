@@ -90,7 +90,7 @@ export default function CandidateProfileModal({ isOpen, onClose, candidate }) {
     }
 
     try {
-      const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api';
+      const apiBaseUrl = import.meta.env.VITE_API_URL || '/api';
       const downloadUrl = `${apiBaseUrl}${resume.download_url}`;
       
       // Fetch the file as a blob

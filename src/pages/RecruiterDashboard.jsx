@@ -5,11 +5,14 @@ import {
   Plus, Eye, Download, Calendar, Award, BarChart3 
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import api from '../utils/api';
 import axios from 'axios';
 import config from '../../config';
+import { usePreloadedData } from '../contexts/DataPreloadContext';
 
 export default function RecruiterDashboard() {
   const navigate = useNavigate();
+  const preloaded = usePreloadedData();
   const [stats, setStats] = useState({
     totalJobs: 0,
     totalCandidates: 0,
@@ -19,63 +22,40 @@ export default function RecruiterDashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Seed quickly from preloaded cache (if present)
+    if (preloaded?.recruiterStats) {
+      const data = preloaded.recruiterStats;
+      setStats({
+        totalJobs: data.total_jobs,
+        totalCandidates: data.total_candidates,
+        avgScore: data.avg_score,
+        recentApplications: data.recent_applications
+      });
+    }
+    // Always refresh from backend to avoid stale zero values.
     fetchDashboardData();
-  }, []);
+  }, [preloaded?.recruiterStats]);
 
   const fetchDashboardData = async () => {
     try {
-      // Fetch jobs data
-      const jobsResponse = await axios.get(`${config.apiUrl}/api/recruitment/jobs/`);
-      const jobs = jobsResponse.data;
+      const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+      const email = userData.email || '';
 
-      let totalCandidates = 0;
-      let totalScore = 0;
-      let scoreCount = 0;
-      let recentCount = 0;
-
-      // Calculate date for "this week" (last 7 days)
-      const oneWeekAgo = new Date();
-      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-
-      // Fetch detailed candidate data for each job
-      for (const job of jobs) {
-        try {
-          const candidatesResponse = await axios.get(
-            `${config.apiUrl}/api/recruitment/jobs/${job.id}/candidates/`
-          );
-          const candidates = candidatesResponse.data;
-
-          totalCandidates += candidates.length;
-
-          candidates.forEach(candidate => {
-            // Calculate average score
-            if (candidate.score !== null && candidate.score !== undefined) {
-              totalScore += parseFloat(candidate.score);
-              scoreCount++;
-            }
-
-            // Count recent applications (last 7 days)
-            if (candidate.created_at) {
-              const createdDate = new Date(candidate.created_at);
-              if (createdDate >= oneWeekAgo) {
-                recentCount++;
-              }
-            }
-          });
-        } catch (error) {
-          console.error(`Error fetching candidates for job ${job.id}:`, error);
-          // Use candidate_count from job if available
-          if (job.candidate_count) {
-            totalCandidates += job.candidate_count;
-          }
-        }
+      if (!email) {
+        setLoading(false);
+        return;
       }
 
+      const res = await axios.get(
+        `${config.apiUrl}/api/recruitment/jobs/recruiter-stats/?email=${encodeURIComponent(email)}`
+      );
+      const data = res.data;
+
       setStats({
-        totalJobs: jobs.length,
-        totalCandidates,
-        avgScore: scoreCount > 0 ? (totalScore / scoreCount).toFixed(1) : 0,
-        recentApplications: recentCount
+        totalJobs: data.total_jobs,
+        totalCandidates: data.total_candidates,
+        avgScore: data.avg_score,
+        recentApplications: data.recent_applications
       });
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
@@ -135,11 +115,11 @@ export default function RecruiterDashboard() {
       color: 'bg-blue-500'
     },
     {
-      icon: Eye,
-      label: 'View All Jobs',
-      description: 'Manage job postings',
-      onClick: () => navigate('/jobs'),
-      color: 'bg-purple-500'
+      icon: Calendar,
+      label: 'Manage Interviews',
+      description: 'Schedule and conduct interviews',
+      onClick: () => navigate('/interviews'),
+      color: 'bg-orange-500'
     },
     {
       icon: BarChart3,

@@ -9,11 +9,16 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import config from '../../config';
 import { useAuth } from '../contexts/AuthContext';
+import { usePreloadedData } from '../contexts/DataPreloadContext';
 import JobDetailsModal from '../components/JobDetailsModal';
 
 export default function CandidateJobs() {
     const navigate = useNavigate();
     const { currentUser } = useAuth();
+    const preloaded = usePreloadedData();
+    const storedUserData = JSON.parse(localStorage.getItem('userData') || '{}');
+    const sessionEmail = currentUser?.email || storedUserData?.email;
+    const sessionRole = storedUserData?.role;
 
     // Modal State
     const [selectedJob, setSelectedJob] = useState(null);
@@ -32,17 +37,28 @@ export default function CandidateJobs() {
     const [sortBy, setSortBy] = useState('newest');
 
     useEffect(() => {
-        // Redirect recruiters to dashboard - this page is for candidates only
-        if (currentUser && currentUser.role === 'RECRUITER') {
+        if (sessionRole === 'RECRUITER') {
             navigate('/dashboard');
-            return; // Don't fetch data if redirecting
+            return;
         }
-        
-        // Fetch data for candidates or when user is loaded
-        if (currentUser) {
-            fetchJobsAndApplications();
+
+        if (!sessionEmail) {
+            setLoading(false);
+            return;
         }
-    }, [currentUser, navigate]);
+
+        const storageKey = `applications_${sessionEmail}`;
+        const appliedJobIds = JSON.parse(localStorage.getItem(storageKey) || '[]');
+        setApplications(appliedJobIds.map(jobId => ({ job: jobId })));
+
+        if (Array.isArray(preloaded?.jobs) && preloaded.jobs.length > 0) {
+            setJobs(preloaded.jobs);
+            setLoading(false);
+            return;
+        }
+
+        fetchJobsAndApplications();
+    }, [sessionEmail, sessionRole, navigate, preloaded?.jobs]);
 
     useEffect(() => {
         filterAndSortJobs();
@@ -53,20 +69,14 @@ export default function CandidateJobs() {
             setLoading(true);
             const jobsResponse = await axios.get(`${config.apiUrl}/api/recruitment/jobs/`);
             const allJobs = jobsResponse.data;
-
-            // Get applications from localStorage instead of backend
-            const storageKey = `applications_${currentUser?.email}`;
-            const appliedJobIds = JSON.parse(localStorage.getItem(storageKey) || '[]');
             
-            console.log('Current user email:', currentUser?.email);
-            console.log('Applied job IDs from localStorage:', appliedJobIds);
+            console.log('Current user email:', sessionEmail);
             console.log('Total jobs:', allJobs.length);
 
             setJobs(allJobs);
-            // Store as array of objects to match previous structure
-            setApplications(appliedJobIds.map(jobId => ({ job: jobId })));
         } catch (error) {
             console.error('Error fetching data:', error);
+            setJobs([]);
         } finally {
             setLoading(false);
         }
@@ -351,7 +361,11 @@ export default function CandidateJobs() {
                                         <button
                                             onClick={(e) => {
                                                 e.stopPropagation(); // Prevent opening modal
-                                                navigate(`/upload-resume?jobId=${job.id}`);
+                                                if (hasApplied) {
+                                                    navigate('/candidate-dashboard');
+                                                } else {
+                                                    navigate(`/upload-resume?jobId=${job.id}`);
+                                                }
                                             }}
                                             className={`w-full py-3 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 ${hasApplied
                                                 ? 'bg-dark border border-gray-700 text-gray-300 hover:bg-gray-800'

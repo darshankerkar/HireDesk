@@ -6,6 +6,8 @@ import { useAuth } from '../contexts/AuthContext';
 
 export default function AddJobModal({ isOpen, onClose, onJobAdded }) {
   const { currentUser } = useAuth();
+  const storedUserData = JSON.parse(localStorage.getItem('userData') || '{}');
+  const sessionEmail = currentUser?.email || storedUserData?.email || '';
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [requirements, setRequirements] = useState('');
@@ -22,7 +24,7 @@ export default function AddJobModal({ isOpen, onClose, onJobAdded }) {
         title,
         description,
         requirements,
-        posted_by_email: currentUser?.email  // Add user email to track ownership
+        posted_by_email: sessionEmail // Ensure ownership even for backend-token-only sessions
       });
       
       onJobAdded(response.data);

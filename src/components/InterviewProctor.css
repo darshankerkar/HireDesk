@@ -1,0 +1,488 @@
+/* ═══════════════════════════════════════════
+   Interview Proctoring — Styles
+   ═══════════════════════════════════════════ */
+
+/* ── Warning Toast ── */
+.proctor-warning {
+  position: fixed;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 24px;
+  border-radius: 12px;
+  max-width: 500px;
+  width: 90%;
+  animation: warningSlide 0.3s ease-out, warningFade 4s ease forwards;
+  font-family: 'Inter', -apple-system, sans-serif;
+}
+
+@keyframes warningSlide {
+  from { transform: translateX(-50%) translateY(-20px); opacity: 0; }
+  to { transform: translateX(-50%) translateY(0); opacity: 1; }
+}
+
+@keyframes warningFade {
+  0%, 80% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+.proctor-warning-low {
+  background: rgba(255, 184, 77, 0.15);
+  border: 1px solid rgba(255, 184, 77, 0.3);
+  color: #ffb84d;
+}
+
+.proctor-warning-medium {
+  background: rgba(255, 165, 0, 0.15);
+  border: 1px solid rgba(255, 165, 0, 0.3);
+  color: #ffa500;
+}
+
+.proctor-warning-high {
+  background: rgba(255, 71, 87, 0.15);
+  border: 1px solid rgba(255, 71, 87, 0.3);
+  color: #ff4757;
+}
+
+.proctor-warning-critical {
+  background: rgba(255, 0, 0, 0.2);
+  border: 1px solid rgba(255, 0, 0, 0.4);
+  color: #ff3333;
+  animation: warningSlide 0.3s ease-out, criticalPulse 0.5s ease infinite alternate;
+}
+
+@keyframes criticalPulse {
+  from { border-color: rgba(255, 0, 0, 0.4); }
+  to { border-color: rgba(255, 0, 0, 0.8); }
+}
+
+.proctor-warning-icon {
+  flex-shrink: 0;
+}
+
+.proctor-warning-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.proctor-warning-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  opacity: 0.7;
+}
+
+.proctor-warning-msg {
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+/* ── Proctor Badge (Floating Panel) ── */
+.proctor-badge {
+  position: fixed;
+  bottom: 100px;
+  right: 16px;
+  z-index: 50;
+  width: 220px;
+  background: rgba(10, 10, 10, 0.95);
+  backdrop-filter: blur(16px);
+  border: 1px solid #222;
+  border-radius: 14px;
+  overflow: hidden;
+  font-family: 'Inter', -apple-system, sans-serif;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+}
+
+.proctor-badge.minimized {
+  width: 160px;
+}
+
+.proctor-badge-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  cursor: pointer;
+  background: rgba(212, 242, 35, 0.05);
+  border-bottom: 1px solid #1a1a1a;
+  transition: background 0.2s;
+}
+
+.proctor-badge-header:hover {
+  background: rgba(212, 242, 35, 0.1);
+}
+
+.proctor-badge-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.proctor-badge-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: #D4F223;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.proctor-trust {
+  font-size: 14px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Body */
+.proctor-badge-body {
+  padding: 12px 14px;
+}
+
+.proctor-stat {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+  padding: 6px 8px;
+  background: rgba(255,255,255,0.03);
+  border-radius: 8px;
+}
+
+.proctor-face-label {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.proctor-face-ok { color: #00ff88; }
+.proctor-face-no_face { color: #ff4757; }
+.proctor-face-multiple_faces { color: #ff4757; }
+.proctor-face-looking_away { color: #ffa500; }
+.proctor-face-detecting { color: #888; }
+
+/* Stats Grid */
+.proctor-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.proctor-stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 6px 4px;
+  background: rgba(255,255,255,0.02);
+  border-radius: 6px;
+  border: 1px solid #1a1a1a;
+}
+
+.proctor-stat-num {
+  font-size: 16px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.proctor-stat-label {
+  font-size: 9px;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Action Buttons */
+.proctor-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.proctor-action-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 6px 8px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid #222;
+  border-radius: 6px;
+  color: #aaa;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.proctor-action-btn:hover {
+  background: rgba(212, 242, 35, 0.1);
+  border-color: #D4F223;
+  color: #D4F223;
+}
+
+/* ═══════════════════════════════════════════
+   REPORT MODAL
+   ═══════════════════════════════════════════ */
+
+.proctor-report-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  font-family: 'Inter', -apple-system, sans-serif;
+}
+
+.proctor-report-modal {
+  background: #111;
+  border: 1px solid #222;
+  border-radius: 16px;
+  max-width: 600px;
+  width: 92%;
+  max-height: 85vh;
+  overflow-y: auto;
+  animation: slideUpReport 0.3s ease;
+}
+
+@keyframes slideUpReport {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.proctor-report-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 24px;
+  border-bottom: 1px solid #222;
+}
+
+.proctor-report-header h3 {
+  margin: 0;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.proctor-report-close {
+  background: #1a1a1a;
+  border: 1px solid #333;
+  color: #888;
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.proctor-report-close:hover {
+  background: #D4F223;
+  color: #0A0A0A;
+  border-color: #D4F223;
+}
+
+.proctor-report-body {
+  padding: 24px;
+}
+
+/* Trust Score Circle */
+.proctor-report-score {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.proctor-score-circle {
+  width: 100px; height: 100px;
+  border-radius: 50%;
+  border: 4px solid;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,0.02);
+}
+
+.proctor-score-value {
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.proctor-score-label {
+  font-size: 9px;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.proctor-verdict {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+
+/* Summary Grid */
+.proctor-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.proctor-summary-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 8px;
+  background: #0A0A0A;
+  border: 1px solid #1a1a1a;
+  border-radius: 10px;
+  text-align: center;
+}
+
+.proctor-summary-num {
+  font-size: 22px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.proctor-summary-card span:last-child {
+  font-size: 9px;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Violation Log */
+.proctor-log {
+  margin-bottom: 20px;
+}
+
+.proctor-log h4 {
+  color: #D4F223;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 0 12px 0;
+}
+
+.proctor-no-violations {
+  color: #00ff88;
+  font-size: 13px;
+  text-align: center;
+  padding: 16px;
+  background: rgba(0, 255, 136, 0.05);
+  border-radius: 8px;
+}
+
+.proctor-log-list {
+  max-height: 250px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.proctor-log-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: rgba(255,255,255,0.02);
+  border-radius: 6px;
+  font-size: 12px;
+  border-left: 3px solid transparent;
+}
+
+.proctor-sev-low { border-left-color: #ffb84d; }
+.proctor-sev-medium { border-left-color: #ffa500; }
+.proctor-sev-high { border-left-color: #ff4757; }
+.proctor-sev-critical { border-left-color: #ff0000; }
+
+.proctor-log-time {
+  color: #555;
+  font-variant-numeric: tabular-nums;
+  font-size: 11px;
+  min-width: 72px;
+}
+
+.proctor-log-severity {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  min-width: 55px;
+  text-align: center;
+}
+
+.proctor-sev-low .proctor-log-severity { background: rgba(255,184,77,0.15); color: #ffb84d; }
+.proctor-sev-medium .proctor-log-severity { background: rgba(255,165,0,0.15); color: #ffa500; }
+.proctor-sev-high .proctor-log-severity { background: rgba(255,71,87,0.15); color: #ff4757; }
+.proctor-sev-critical .proctor-log-severity { background: rgba(255,0,0,0.15); color: #ff3333; }
+
+.proctor-log-msg {
+  color: #ccc;
+  flex: 1;
+}
+
+/* Download button */
+.proctor-download-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px;
+  background: #D4F223;
+  color: #0A0A0A;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.proctor-download-btn:hover {
+  background: #e8ff5a;
+  transform: translateY(-1px);
+}
+
+/* Scrollbar */
+.proctor-report-modal::-webkit-scrollbar,
+.proctor-log-list::-webkit-scrollbar { width: 4px; }
+.proctor-report-modal::-webkit-scrollbar-track,
+.proctor-log-list::-webkit-scrollbar-track { background: transparent; }
+.proctor-report-modal::-webkit-scrollbar-thumb,
+.proctor-log-list::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .proctor-badge {
+    bottom: 80px;
+    right: 8px;
+    width: 180px;
+  }
+  .proctor-summary-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

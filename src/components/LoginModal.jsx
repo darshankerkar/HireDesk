@@ -10,7 +10,7 @@ export default function LoginModal({ isOpen, onClose, preselectedRole = null }) 
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login, loginWithGoogle } = useAuth();
+  const { loginWithGoogle } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -18,14 +18,89 @@ export default function LoginModal({ isOpen, onClose, preselectedRole = null }) 
     setLoading(true);
 
     try {
-      // Firebase login
-      const userCredential = await login(email, password);
-      
-      // Get Django JWT token
+      // Email/password login is backend-first so QA/backend users can sign in
+      // without requiring Firebase account provisioning.
+      let response;
       try {
-        const response = await axios.post(`${config.apiUrl}/api/auth/token/`, {
+        response = await axios.post(`${config.apiUrl}/api/auth/token/`, {
+          username: email,
+          password: password
+        });
+      } catch {
+        response = await axios.post(`${config.apiUrl}/api/auth/token/`, {
           username: email.split('@')[0],
           password: password
+        });
+      }
+
+        const { user, access, refresh } = response.data;
+        
+        // Store user data
+        const userData = {
+          email: user.email,
+          role: user.role,
+          is_recruiter: user.is_recruiter,
+          is_paid: user.is_paid,
+          company_name: user.company_name,
+          subscription_plan: user.subscription_plan,
+          is_email_verified: user.is_email_verified,
+          beta_access: user.beta_access,
+          monitoring_credits: user.monitoring_credits,
+        };
+        localStorage.setItem('userData', JSON.stringify(userData));
+        
+        // Store tokens
+        localStorage.setItem('access_token', access);
+        localStorage.setItem('refresh_token', refresh);
+        // Ensure downstream components relying on firebaseUser still have identity.
+        localStorage.setItem('firebaseUser', JSON.stringify({
+          uid: `backend-${user.id || user.email}`,
+          email: user.email,
+          displayName: user.username || user.email.split('@')[0]
+        }));
+
+        // Check if email is verified
+        if (!user.is_email_verified) {
+          // Request a fresh OTP for unverified user
+          try {
+            await axios.post(`${config.apiUrl}/api/auth/resend-otp/`, { email: user.email });
+          } catch (e) { /* ignore */ }
+          onClose();
+          window.location.href = `/check-email?email=${encodeURIComponent(user.email)}`;
+          return;
+        }
+
+        onClose();
+        // Navigate to jobs page so data preloads in background
+        const ud = JSON.parse(localStorage.getItem('userData') || '{}');
+        const target = (ud.role === 'RECRUITER' && ud.is_paid) ? '/jobs' : '/candidate-jobs';
+        window.location.href = target;
+    } catch (err) {
+      console.error('Backend login error:', err);
+      setError(err?.response?.data?.detail || 'Invalid credentials. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setError('');
+    setLoading(true);
+    try {
+      // Firebase Google login
+      const userCredential = await loginWithGoogle();
+      
+      // Get user email from Google
+      const googleEmail = userCredential.user.email;
+      
+      // Try to get user data from Django backend
+      try {
+        // First, try to get or create user in Django
+        const response = await axios.post(`${config.apiUrl}/api/auth/google-login/`, {
+          email: googleEmail,
+          uid: userCredential.user.uid,
+          displayName: userCredential.user.displayName,
+          photoURL: userCredential.user.photoURL
         });
 
         const { user, access, refresh } = response.data;
@@ -37,7 +112,10 @@ export default function LoginModal({ isOpen, onClose, preselectedRole = null }) 
           is_recruiter: user.is_recruiter,
           is_paid: user.is_paid,
           company_name: user.company_name,
-          subscription_plan: user.subscription_plan
+          subscription_plan: user.subscription_plan,
+          is_email_verified: user.is_email_verified,
+          beta_access: user.beta_access,
+          monitoring_credits: user.monitoring_credits,
         };
         localStorage.setItem('userData', JSON.stringify(userData));
         
@@ -46,38 +124,28 @@ export default function LoginModal({ isOpen, onClose, preselectedRole = null }) 
         localStorage.setItem('refresh_token', refresh);
         
         // Store Firebase user
-        if (userCredential.user) {
-          const firebaseUser = {
-            uid: userCredential.user.uid,
-            email: userCredential.user.email,
-            accessToken: await userCredential.user.getIdToken()
-          };
-          localStorage.setItem('firebaseUser', JSON.stringify(firebaseUser));
-        }
+        const firebaseUser = {
+          uid: userCredential.user.uid,
+          email: userCredential.user.email,
+          displayName: userCredential.user.displayName,
+          photoURL: userCredential.user.photoURL,
+          accessToken: await userCredential.user.getIdToken()
+        };
+        localStorage.setItem('firebaseUser', JSON.stringify(firebaseUser));
 
         onClose();
-        window.location.reload();
+        // Navigate to jobs page so data preloads in background
+        const ud2 = JSON.parse(localStorage.getItem('userData') || '{}');
+        const target2 = (ud2.role === 'RECRUITER' && ud2.is_paid) ? '/jobs' : '/candidate-jobs';
+        window.location.href = target2;
       } catch (backendError) {
-        console.error('Backend login error:', backendError);
-        setError('Invalid credentials. Please try again.');
+        console.error('Backend Google login error:', backendError);
+        // If backend fails, still store Firebase user but show error
+        setError('Account not found. Please sign up first or contact support.');
+        setLoading(false);
       }
     } catch (err) {
-      setError(err.message || 'Login failed');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleGoogleSignIn = async () => {
-    setError('');
-    setLoading(true);
-    try {
-      await loginWithGoogle();
-      onClose();
-      window.location.reload();
-    } catch (err) {
       setError(err.message || 'Google sign-in failed');
-    } finally {
       setLoading(false);
     }
   };

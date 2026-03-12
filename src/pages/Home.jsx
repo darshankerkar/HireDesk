@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight, CheckCircle, Upload, Cpu, ShieldCheck, Users, FileSpreadsheet } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
-import config from '../../config';
+import { usePreloadedData } from '../contexts/DataPreloadContext';
+import { useBranding } from '../contexts/BrandingContext';
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 20 },
@@ -22,6 +22,8 @@ const staggerContainer = {
 
 export default function Home() {
   const [userData, setUserData] = useState(null);
+  const { platformStats, jobs } = usePreloadedData() || {};
+  const brand = useBranding();
   const [stats, setStats] = useState({
     totalCandidates: 0,
     avgScore: 0
@@ -32,47 +34,24 @@ export default function Home() {
     if (storedUserData) {
       setUserData(JSON.parse(storedUserData));
     }
-    fetchStats();
   }, []);
 
-  const fetchStats = async () => {
-    try {
-      const jobsResponse = await axios.get(`${config.apiUrl}/api/recruitment/jobs/`);
-      const jobs = jobsResponse.data;
-
-      let totalCandidates = 0;
-      let totalScore = 0;
-      let scoreCount = 0;
-
-      for (const job of jobs) {
-        try {
-          const candidatesResponse = await axios.get(
-            `${config.apiUrl}/api/recruitment/jobs/${job.id}/candidates/`
-          );
-          const candidates = candidatesResponse.data;
-          totalCandidates += candidates.length;
-
-          candidates.forEach(candidate => {
-            if (candidate.score !== null && candidate.score !== undefined) {
-              totalScore += parseFloat(candidate.score);
-              scoreCount++;
-            }
-          });
-        } catch (error) {
-          if (job.candidate_count) {
-            totalCandidates += job.candidate_count;
-          }
-        }
-      }
-
+  // Use preloaded platform stats instead of fetching all candidates
+  useEffect(() => {
+    if (platformStats) {
       setStats({
-        totalCandidates,
-        avgScore: scoreCount > 0 ? (totalScore / scoreCount).toFixed(0) : 0
+        totalCandidates: platformStats.total_candidates || 0,
+        avgScore: platformStats.avg_score || 0
       });
-    } catch (error) {
-      console.error('Error fetching stats:', error);
+    } else if (jobs && jobs.length > 0) {
+      // Fallback: compute from jobs candidate_count
+      let totalCandidates = 0;
+      for (const job of jobs) {
+        totalCandidates += job.candidate_count || 0;
+      }
+      setStats(prev => ({ ...prev, totalCandidates }));
     }
-  };
+  }, [platformStats, jobs]);
 
 
   const isRecruiter = userData?.role === 'RECRUITER';
@@ -100,7 +79,7 @@ export default function Home() {
             transition={{ delay: 0.5, duration: 0.8 }}
             className="text-xl md:text-2xl text-gray-400 mb-10 max-w-2xl mx-auto font-light"
           >
-            The AI-powered screening platform that automates resume parsing, scoring, and verification.
+            AI-powered recruitment automation software (SaaS platform) for companies.
           </motion.p>
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
@@ -162,7 +141,7 @@ export default function Home() {
               viewport={{ once: true }}
               transition={{ duration: 0.8 }}
             >
-              <h2 className="text-5xl font-display font-bold mb-8">Data-Driven <br /><span className="text-primary">Hiring Decisions</span></h2>
+              <h2 className="text-5xl font-display font-bold mb-8">Data-Driven <br /><span className="text-primary">Recruitment Decisions</span></h2>
               <ul className="space-y-6">
                 <li className="flex items-center text-xl text-gray-300">
                   <CheckCircle className="h-6 w-6 text-primary mr-4" />
@@ -211,9 +190,25 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="py-12 bg-surface border-t border-gray-800">
-        <div className="container mx-auto px-6 text-center">
-          <p className="text-gray-500">© 2024 HireDesk. All rights reserved.</p>
+      <footer className="pt-10 pb-8 bg-surface border-t border-[#2a2a2a] mt-20">
+        <div className="container mx-auto px-6 text-center max-w-[700px]">
+          <p className="text-[#9CA3AF] text-sm leading-[1.6] mb-8 mx-auto">
+            {brand.description}<br className="hidden md:block"/>
+            We provide software tools for companies and do not operate as a job placement or recruitment agency.
+          </p>
+          
+          <div className="flex flex-wrap justify-center items-center gap-4 md:gap-6 mb-10 text-sm font-medium text-gray-300">
+            <Link to="/terms" className="hover:text-primary transition-colors duration-300">Terms & Conditions</Link>
+            <span className="text-gray-600 hidden md:inline">|</span>
+            <Link to="/privacy" className="hover:text-primary transition-colors duration-300">Privacy Policy</Link>
+            <span className="text-gray-600 hidden md:inline">|</span>
+            <Link to="/refund" className="hover:text-primary transition-colors duration-300">Refund Policy</Link>
+            <span className="text-gray-600 hidden md:inline">|</span>
+            <Link to="/contact" className="hover:text-primary transition-colors duration-300">Contact</Link>
+          </div>
+          
+          <p className="text-[#9CA3AF] text-sm mb-2">Built for modern hiring teams.</p>
+          <p className="text-gray-600 text-sm">{brand.copyright}</p>
         </div>
       </footer>
     </div>

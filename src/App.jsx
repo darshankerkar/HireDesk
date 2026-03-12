@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { Toaster } from 'react-hot-toast';
 import Navbar from './components/Navbar';
@@ -9,25 +9,66 @@ import Dashboard from './pages/Dashboard';
 import RecruiterDashboard from './pages/RecruiterDashboard';
 import CandidateDashboard from './pages/CandidateDashboard';
 import PaymentPage from './pages/PaymentPage';
+import PaymentSuccess from './pages/PaymentSuccess';
+import VerifyEmail from './pages/VerifyEmail';
+import CheckEmail from './pages/CheckEmail';
 import Jobs from './pages/Jobs';
 import UploadResume from './pages/UploadResume';
 import BulkUpload from './pages/BulkUpload';
 import ResumeAnalyzer from './pages/ResumeAnalyzer';
 import LandingPage from './pages/LandingPage';
 import CandidateJobs from './pages/CandidateJobs';
+import InterviewsDashboard from './pages/InterviewsDashboard';
+import InterviewRoom from './components/InterviewRoom';
+import InterviewJoinGate from './components/InterviewJoinGate';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { DataPreloadProvider } from './contexts/DataPreloadContext';
+import TermsAndConditions from './pages/TermsAndConditions';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import RefundPolicy from './pages/RefundPolicy';
+import ContactUs from './pages/ContactUs';
+import Pricing from './pages/Pricing';
+import { BrandingProvider } from './contexts/BrandingContext';
 
 function AppContent() {
   const { currentUser } = useAuth();
+  const location = useLocation();
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [verifyingRole, setVerifyingRole] = useState(false);
 
   useEffect(() => {
+    // If signup is in progress, check if it's stale (> 30 seconds old)
+    const signupPending = localStorage.getItem('signup_pending');
+    if (signupPending) {
+      const pendingTime = parseInt(signupPending, 10);
+      if (pendingTime && Date.now() - pendingTime > 30000) {
+        // Stale signup_pending flag — clear it
+        console.warn('Clearing stale signup_pending flag');
+        localStorage.removeItem('signup_pending');
+      } else {
+        // Active signup in progress — keep loading, don't interfere
+        setLoading(true);
+        return;
+      }
+    }
+
     // Load user data from localStorage
     const storedUserData = localStorage.getItem('userData');
     if (storedUserData) {
       const parsedData = JSON.parse(storedUserData);
+      
+      // CRITICAL: Validate that stored userData matches current Firebase user
+      // Prevents stale session data from a previous user leaking through
+      if (currentUser && parsedData.email && currentUser.email !== parsedData.email) {
+        console.warn('Session mismatch: clearing stale userData', parsedData.email, '!=', currentUser.email);
+        localStorage.removeItem('userData');
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+        setUserData(null);
+        setLoading(false);
+        return;
+      }
       
       // Simulate backend role verification for recruiters
       if (parsedData.role === 'RECRUITER' && !parsedData.is_paid) {
@@ -47,7 +88,49 @@ function AppContent() {
   }, [currentUser]);
 
   // Show landing page if user is not logged in
-  if (!currentUser || !userData) {
+  // Check both Firebase auth AND Django JWT token (access_token)
+  // Firebase signup is fire-and-forget, so currentUser may be null even after OTP verification
+  const hasValidSession = currentUser || localStorage.getItem('access_token');
+  if (!hasValidSession || !userData) {
+    // Public routes accessible without login
+    if (location.pathname.startsWith('/verify-email/')) {
+      return (
+        <Routes>
+          <Route path="/verify-email/:token" element={<VerifyEmail />} />
+        </Routes>
+      );
+    }
+    if (location.pathname === '/check-email') {
+      return (
+        <Routes>
+          <Route path="/check-email" element={<CheckEmail />} />
+        </Routes>
+      );
+    }
+    
+
+    // Static Public Pages
+    if (['/terms', '/privacy', '/refund', '/contact', '/pricing'].includes(location.pathname)) {
+      return (
+        <div className="min-h-screen bg-dark text-secondary font-sans">
+          <Navbar />
+          <main className="pt-20">
+            <Routes>
+              <Route path="/terms" element={<TermsAndConditions />} />
+              <Route path="/privacy" element={<PrivacyPolicy />} />
+              <Route path="/refund" element={<RefundPolicy />} />
+              <Route path="/contact" element={<ContactUs />} />
+              <Route path="/pricing" element={<Pricing />} />
+            </Routes>
+          </main>
+        </div>
+      );
+    }
+
+    // If user is trying to join an interview room, show Google login gate
+    if (location.pathname.startsWith('/interview/room/')) {
+      return <InterviewJoinGate />;
+    }
     return <LandingPage />;
   }
 
@@ -83,15 +166,34 @@ function AppContent() {
 
   const isRecruiter = userData.role === 'RECRUITER';
   const isPaid = userData.is_paid;
+  const isEmailVerified = userData.is_email_verified !== false; // default true for existing users
+  const isInterviewRoomRoute = location.pathname.startsWith('/interview/room/');
+
+  // Email Verification Gate: Unverified users cannot access any features
+  if (!isEmailVerified) {
+    return (
+      <div className="min-h-screen bg-dark text-secondary font-sans">
+        <Navbar />
+        <main className="pt-20">
+          <Routes>
+            <Route path="/check-email" element={<CheckEmail />} />
+            <Route path="/verify-email/:token" element={<VerifyEmail />} />
+            <Route path="*" element={<Navigate to={`/check-email?email=${encodeURIComponent(userData.email || '')}`} replace />} />
+          </Routes>
+        </main>
+      </div>
+    );
+  }
 
   // Recruiter Payment Gate: Unpaid recruiters must go to payment page
-  if (isRecruiter && !isPaid) {
+  if (isRecruiter && !isPaid && !isInterviewRoomRoute) {
     return (
       <div className="min-h-screen bg-dark text-secondary font-sans">
         <Navbar />
         <main className="pt-20">
           <Routes>
             <Route path="/payment" element={<PaymentPage />} />
+            <Route path="/payment/success" element={<PaymentSuccess />} />
             <Route path="*" element={<Navigate to="/payment" replace />} />
           </Routes>
         </main>
@@ -104,6 +206,7 @@ function AppContent() {
   // Unpaid recruiters -> Candidate Dashboard (can upload/apply like candidates)  
   // Candidates -> Candidate Dashboard
   const defaultDashboard = (isRecruiter && isPaid) ? '/recruiter-dashboard' : '/candidate-dashboard';
+  const defaultJobsPage = (isRecruiter && isPaid) ? '/jobs' : '/candidate-jobs';
 
   // Show normal app with navbar if user is logged in and authorized
   return (
@@ -191,6 +294,38 @@ function AppContent() {
             </ProtectedRoute>
           } />
 
+          {/* Interviews Dashboard - Recruiters only */}
+          <Route path="/interviews" element={
+            isRecruiter && isPaid ? (
+              <ProtectedRoute>
+                <InterviewsDashboard />
+              </ProtectedRoute>
+            ) : (
+              <Navigate to={defaultDashboard} replace />
+            )
+          } />
+
+          {/* Interview Room - Accessible to both recruiters and candidates */}
+          <Route path="/interview/room/:interviewId" element={
+            <ProtectedRoute>
+              <InterviewRoom />
+            </ProtectedRoute>
+          } />
+
+          {/* Payment Success */}
+          <Route path="/payment/success" element={<PaymentSuccess />} />
+
+          {/* Email Verification (for already-logged-in users clicking link) */}
+          <Route path="/verify-email/:token" element={<VerifyEmail />} />
+          <Route path="/check-email" element={<CheckEmail />} />
+
+          {/* Legal / Static Pages */}
+          <Route path="/terms" element={<TermsAndConditions />} />
+          <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="/refund" element={<RefundPolicy />} />
+          <Route path="/contact" element={<ContactUs />} />
+          <Route path="/pricing" element={<Pricing />} />
+
           {/* Redirect invalid routes to home */}
           <Route path="*" element={<Navigate to="/home" replace />} />
         </Routes>
@@ -203,10 +338,14 @@ function AppContent() {
 function App() {
   return (
     <AuthProvider>
+      <BrandingProvider>
       <Router>
         <Toaster position="top-right" />
-        <AppContent />
+        <DataPreloadProvider>
+          <AppContent />
+        </DataPreloadProvider>
       </Router>
+      </BrandingProvider>
     </AuthProvider>
   );
 }

@@ -3,6 +3,7 @@ import { MessageCircle, X, Send, Briefcase } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../utils/api';
 import { sendMessage } from '../services/geminiService';
+import { getBranding } from '../utils/branding';
 
 export default function ChatBot() {
     const [isOpen, setIsOpen] = useState(false);
@@ -40,7 +41,7 @@ export default function ChatBot() {
         if (messages.length === 0) {
             setMessages([{
                 role: 'assistant',
-                content: "Hi! I'm your HireDesk assistant. Ask me anything about our job openings!"
+                content: `Hi! I'm your ${getBranding().appName} assistant. Ask me anything about our job openings!`
             }]);
         }
     }, []);

@@ -1,0 +1,772 @@
+/* ═══════════════════════════════════════════
+   HireDesk Video Call — Premium Interface
+   With Live Captions & Transcript
+   ═══════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* ── Container ── */
+.vc-container {
+  min-height: 100vh;
+  background: #0d0d0d;
+  display: flex;
+  flex-direction: column;
+  font-family: 'Inter', -apple-system, sans-serif;
+  color: #e0e0e0;
+  overflow: hidden;
+  position: relative;
+}
+
+/* ── Top Bar ── */
+.vc-topbar {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  z-index: 20;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  background: linear-gradient(180deg, rgba(0,0,0,0.85) 0%, transparent 100%);
+  transition: opacity 0.3s ease;
+}
+
+.vc-topbar.visible { opacity: 1; }
+
+.vc-topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.vc-topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.vc-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.vc-logo-text {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #fff;
+  letter-spacing: -0.01em;
+}
+
+.vc-separator {
+  width: 1px;
+  height: 20px;
+  background: rgba(255,255,255,0.15);
+}
+
+.vc-timer {
+  font-size: 0.9rem;
+  color: rgba(255,255,255,0.7);
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  min-width: 48px;
+}
+
+/* ── Status Indicator ── */
+.vc-status {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.vc-status-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: #888;
+  animation: statusPulse 2s ease infinite;
+}
+
+.vc-status-connected .vc-status-dot { background: #00ff88; }
+.vc-status-connecting .vc-status-dot { background: #ffa500; }
+.vc-status-reconnecting .vc-status-dot { background: #ffa500; }
+.vc-status-server-error .vc-status-dot { background: #ff4757; animation: none; }
+
+@keyframes statusPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* ── Top Bar Buttons ── */
+.vc-btn-icon {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.06);
+  color: #e0e0e0;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.vc-btn-icon:hover {
+  background: rgba(255,255,255,0.12);
+  border-color: rgba(255,255,255,0.2);
+}
+
+.vc-invite-btn.copied {
+  background: rgba(0, 255, 136, 0.15);
+  border-color: #00ff88;
+  color: #00ff88;
+}
+
+.vc-btn-icon-sm {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.4rem;
+  border-radius: 6px;
+  border: none;
+  background: rgba(255,255,255,0.06);
+  color: #e0e0e0;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.vc-btn-icon-sm:hover {
+  background: rgba(255,255,255,0.15);
+}
+
+/* ── Video Area ── */
+.vc-video-area {
+  flex: 1;
+  display: flex;
+  align-items: stretch;
+  padding: 4.5rem 1rem 7rem;
+  gap: 1rem;
+}
+
+.vc-grid {
+  display: grid;
+  gap: 0.75rem;
+  width: 100%;
+  max-width: 1400px;
+  max-height: calc(100vh - 11rem);
+  margin: 0 auto;
+  align-content: center;
+}
+
+.vc-grid-with-panel {
+  max-width: 1000px;
+}
+
+.vc-grid-1 { grid-template-columns: 1fr 1fr; }
+.vc-grid-2 { grid-template-columns: 1fr 1fr; }
+.vc-grid-3 { grid-template-columns: repeat(2, 1fr); }
+.vc-grid-4 { grid-template-columns: repeat(2, 1fr); }
+
+/* ── Video Tile ── */
+.vc-video-tile {
+  position: relative;
+  background: #1a1a2e;
+  border-radius: 16px;
+  overflow: hidden;
+  aspect-ratio: 16/9;
+  min-height: 240px;
+  border: 2px solid transparent;
+  transition: border-color 0.3s ease;
+}
+
+.vc-video-tile:hover { border-color: rgba(255,255,255,0.08); }
+.vc-solo { border-color: rgba(0, 255, 136, 0.3); }
+
+.vc-video {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* ── Camera Off Avatar ── */
+.vc-video-off {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.vc-avatar {
+  width: 80px; height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #0d0d0d;
+}
+
+/* ── Video Info Overlay ── */
+.vc-video-info {
+  position: absolute;
+  bottom: 0.75rem; left: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.75rem;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(12px);
+  border-radius: 8px;
+}
+
+.vc-name {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: rgba(255,255,255,0.9);
+}
+
+.vc-muted-icon {
+  display: flex;
+  align-items: center;
+  padding: 2px;
+  border-radius: 4px;
+  background: rgba(255, 71, 87, 0.2);
+}
+
+/* ── Listening Badge (CC active) ── */
+.vc-listening-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(0, 255, 136, 0.15);
+  color: #00ff88;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.vc-listening-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: #00ff88;
+  animation: statusPulse 1s ease infinite;
+}
+
+/* ── Waiting Tile ── */
+.vc-waiting-tile {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  border: 2px dashed rgba(0, 255, 136, 0.2);
+}
+
+.vc-waiting {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 1rem;
+  padding: 2rem;
+  text-align: center;
+}
+
+.vc-waiting h3 { font-size: 1.1rem; font-weight: 600; color: rgba(255,255,255,0.8); margin: 0; }
+.vc-waiting p { font-size: 0.85rem; color: rgba(255,255,255,0.4); margin: 0; }
+
+.vc-waiting-animation {
+  position: relative;
+  width: 100px; height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+}
+
+.vc-pulse-ring {
+  position: absolute;
+  width: 100%; height: 100%;
+  border-radius: 50%;
+  border: 2px solid rgba(0, 255, 136, 0.15);
+  animation: pulseRing 3s ease-out infinite;
+}
+.vc-pulse-ring.delay-1 { animation-delay: 1s; }
+.vc-pulse-ring.delay-2 { animation-delay: 2s; }
+
+@keyframes pulseRing {
+  0% { transform: scale(0.5); opacity: 1; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+
+.vc-waiting-icon { position: relative; z-index: 1; }
+
+/* ═══════════════════════════════════════════
+   LIVE CAPTION BAR
+   ═══════════════════════════════════════════ */
+.vc-caption-bar {
+  position: absolute;
+  bottom: 6.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 25;
+  max-width: 700px;
+  width: 90%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  animation: captionFadeIn 0.3s ease;
+}
+
+@keyframes captionFadeIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(8px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+.vc-caption-content {
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(16px);
+  border-radius: 12px;
+  padding: 0.75rem 1.25rem;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.vc-caption-speaker {
+  color: #00ff88;
+  font-weight: 600;
+  font-size: 0.85rem;
+  margin-right: 0.5rem;
+}
+
+.vc-caption-text {
+  color: #fff;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+/* ═══════════════════════════════════════════
+   TRANSCRIPT SIDE PANEL
+   ═══════════════════════════════════════════ */
+.vc-transcript-panel {
+  width: 360px;
+  min-width: 320px;
+  background: #12121a;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.06);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.vc-transcript-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.vc-transcript-header h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.vc-transcript-actions {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.vc-transcript-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+  scroll-behavior: smooth;
+}
+
+.vc-transcript-body::-webkit-scrollbar {
+  width: 4px;
+}
+
+.vc-transcript-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.vc-transcript-body::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.1);
+  border-radius: 4px;
+}
+
+/* Empty Transcript */
+.vc-transcript-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 3rem 1rem;
+  gap: 1rem;
+}
+
+.vc-transcript-empty p {
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.4);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Transcript Entry */
+.vc-transcript-entry {
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  background: rgba(255,255,255,0.03);
+  border-radius: 10px;
+  transition: background 0.2s;
+}
+
+.vc-transcript-entry:hover {
+  background: rgba(255,255,255,0.06);
+}
+
+.vc-transcript-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.35rem;
+}
+
+.vc-transcript-speaker {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #00ff88;
+}
+
+.vc-transcript-time {
+  font-size: 0.7rem;
+  color: rgba(255,255,255,0.3);
+  font-variant-numeric: tabular-nums;
+}
+
+.vc-transcript-text {
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.8);
+  margin: 0;
+  line-height: 1.55;
+}
+
+/* ═══════════════════════════════════════════
+   BOTTOM CONTROLS
+   ═══════════════════════════════════════════ */
+.vc-controls {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  z-index: 20;
+  display: flex;
+  justify-content: center;
+  padding: 1.25rem 1rem 1.75rem;
+  background: linear-gradient(0deg, rgba(0,0,0,0.85) 0%, transparent 100%);
+  transition: opacity 0.3s ease;
+}
+
+.vc-controls.visible { opacity: 1; }
+
+.vc-controls-center {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* ── Control Button ── */
+.vc-ctrl-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.85rem 1rem;
+  border-radius: 14px;
+  border: none;
+  background: rgba(255, 255, 255, 0.08);
+  color: #e0e0e0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 64px;
+  font-family: inherit;
+}
+
+.vc-ctrl-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-2px);
+}
+
+.vc-ctrl-btn:active { transform: translateY(0); }
+
+.vc-ctrl-label {
+  font-size: 0.65rem;
+  font-weight: 500;
+  opacity: 0.7;
+  white-space: nowrap;
+}
+
+.vc-ctrl-off {
+  background: rgba(255, 71, 87, 0.2);
+  color: #ff4757;
+}
+.vc-ctrl-off:hover { background: rgba(255, 71, 87, 0.35); }
+
+/* Active State (Captions ON, Transcript ON) */
+.vc-ctrl-active {
+  background: rgba(0, 255, 136, 0.12);
+  color: #00ff88;
+  border: 1px solid rgba(0, 255, 136, 0.25);
+}
+.vc-ctrl-active:hover {
+  background: rgba(0, 255, 136, 0.2);
+}
+
+/* End/Leave Button */
+.vc-ctrl-end {
+  background: #ff4757;
+  color: #fff;
+  min-width: 72px;
+}
+.vc-ctrl-end:hover {
+  background: #ff2d3f;
+  box-shadow: 0 4px 20px rgba(255, 71, 87, 0.4);
+}
+
+/* ── Shared Buttons ── */
+.vc-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1.25rem;
+  border-radius: 10px;
+  border: none;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.vc-btn-primary {
+  background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
+  color: #0d0d0d;
+}
+.vc-btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(0, 255, 136, 0.3);
+}
+
+.vc-btn-sm { padding: 0.5rem 1rem; font-size: 0.8rem; }
+
+.vc-btn-ghost {
+  background: rgba(255,255,255,0.06);
+  color: #e0e0e0;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+.vc-btn-ghost:hover { background: rgba(255,255,255,0.12); }
+
+/* ── Error Screen ── */
+.vc-error-screen {
+  min-height: 100vh;
+  background: #0d0d0d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  font-family: 'Inter', -apple-system, sans-serif;
+}
+
+.vc-error-card {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  border: 1px solid rgba(255, 71, 87, 0.3);
+  border-radius: 20px;
+  padding: 2.5rem;
+  text-align: center;
+  max-width: 480px;
+  width: 100%;
+}
+
+.vc-error-icon { margin-bottom: 1.5rem; }
+
+.vc-error-card h2 {
+  color: #fff;
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin: 0 0 0.75rem 0;
+}
+
+.vc-error-msg {
+  color: rgba(255,255,255,0.6);
+  font-size: 0.9rem;
+  margin: 0 0 1.5rem 0;
+  line-height: 1.5;
+}
+
+.vc-error-help {
+  background: rgba(0,0,0,0.2);
+  border-radius: 12px;
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+
+.vc-error-help h4 {
+  color: #00ff88;
+  margin: 0 0 1rem 0;
+  font-size: 0.9rem;
+}
+
+.vc-help-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.vc-help-step {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.7);
+}
+
+.vc-step-num {
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  background: rgba(0, 255, 136, 0.15);
+  color: #00ff88;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.vc-error-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+}
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .vc-transcript-panel {
+    position: absolute;
+    right: 0; top: 0; bottom: 0;
+    border-radius: 0;
+    width: 300px;
+    z-index: 30;
+  }
+}
+
+@media (max-width: 768px) {
+  .vc-grid { grid-template-columns: 1fr !important; }
+  
+  .vc-topbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+  }
+  
+  .vc-topbar-right { align-self: flex-end; }
+  .vc-controls-center { gap: 0.35rem; }
+  .vc-ctrl-btn { min-width: 52px; padding: 0.7rem 0.6rem; }
+  .vc-video-tile { min-height: 200px; }
+  .vc-avatar { width: 60px; height: 60px; font-size: 1.5rem; }
+  
+  .vc-transcript-panel { width: 280px; }
+  
+  .vc-caption-bar { bottom: 5.5rem; max-width: 90%; }
+}
+
+@media (max-width: 480px) {
+  .vc-logo-text { display: none; }
+  .vc-ctrl-label { display: none; }
+  .vc-ctrl-btn { min-width: 44px; padding: 0.75rem; border-radius: 50%; }
+  .vc-ctrl-end { border-radius: 50px; padding: 0.75rem 1rem; }
+}
+
+/* ── Violation Overlay ── */
+.vc-violation-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.95);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  backdrop-filter: blur(10px);
+}
+
+.vc-violation-card {
+  background: #1a1a2e;
+  border: 2px solid #ff4757;
+  border-radius: 24px;
+  padding: 3rem 2rem;
+  max-width: 500px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 0 50px rgba(255, 71, 87, 0.3);
+  animation: violationAppear 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes violationAppear {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.vc-violation-icon {
+  margin-bottom: 1.5rem;
+  animation: iconPulse 2s infinite;
+}
+
+@keyframes iconPulse {
+  0% { transform: scale(1); filter: drop-shadow(0 0 0 rgba(255, 71, 87, 0)); }
+  50% { transform: scale(1.1); filter: drop-shadow(0 0 15px rgba(255, 71, 87, 0.5)); }
+  100% { transform: scale(1); filter: drop-shadow(0 0 0 rgba(255, 71, 87, 0)); }
+}
+
+.vc-violation-card h2 {
+  color: #ff4757;
+  font-size: 2rem;
+  font-weight: 800;
+  margin: 0 0 1rem 0;
+  letter-spacing: 0.05em;
+}
+
+.vc-violation-card p {
+  color: #fff;
+  font-size: 1.1rem;
+  line-height: 1.5;
+  margin: 0 0 1.5rem 0;
+}
+
+.vc-violation-instruction {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 1rem;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  color: #888;
+  margin-bottom: 2rem;
+}

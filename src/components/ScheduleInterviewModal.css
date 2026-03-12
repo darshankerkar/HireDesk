@@ -1,0 +1,334 @@
+/* ═══════════════════════════════════════════
+   Schedule Interview Modal — HireDesk Theme
+   ═══════════════════════════════════════════ */
+
+/* Overlay */
+.sim-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: simFadeIn 0.2s ease;
+}
+
+@keyframes simFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Modal */
+.sim-modal {
+  background: #111;
+  border: 1px solid #222;
+  border-radius: 16px;
+  max-width: 680px;
+  width: 92%;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: simSlideUp 0.3s ease-out;
+  font-family: 'Inter', -apple-system, sans-serif;
+}
+
+@keyframes simSlideUp {
+  from { transform: translateY(24px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* Header */
+.sim-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid #222;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sim-header-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sim-header h2 {
+  margin: 0;
+  color: #fff;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.sim-close {
+  background: #1a1a1a;
+  border: 1px solid #333;
+  color: #888;
+  width: 34px; height: 34px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.sim-close:hover {
+  background: #D4F223;
+  color: #0A0A0A;
+  border-color: #D4F223;
+}
+
+/* Candidate Info */
+.sim-candidate {
+  margin: 16px 24px;
+  padding: 16px;
+  background: rgba(212, 242, 35, 0.06);
+  border: 1px solid rgba(212, 242, 35, 0.15);
+  border-left: 3px solid #D4F223;
+  border-radius: 10px;
+}
+
+.sim-candidate-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 0;
+}
+
+.sim-candidate-label {
+  color: #888;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.sim-candidate-value {
+  color: #ddd;
+  font-size: 13px;
+}
+
+.sim-score {
+  background: #D4F223;
+  color: #0A0A0A;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* Error */
+.sim-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0 24px 16px;
+  padding: 12px 16px;
+  background: rgba(255, 71, 87, 0.08);
+  border: 1px solid rgba(255, 71, 87, 0.3);
+  border-radius: 10px;
+  color: #ff6b81;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.sim-error svg { flex-shrink: 0; margin-top: 1px; }
+
+/* Form */
+.sim-form {
+  padding: 0 24px 20px;
+}
+
+.sim-field {
+  margin-bottom: 16px;
+}
+
+.sim-field label {
+  display: block;
+  color: #D4F223;
+  font-weight: 600;
+  margin-bottom: 6px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.sim-field input,
+.sim-field select,
+.sim-field textarea {
+  width: 100%;
+  padding: 11px 14px;
+  background: #0A0A0A;
+  border: 1px solid #2a2a2a;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 14px;
+  font-family: inherit;
+  transition: border-color 0.2s ease;
+  box-sizing: border-box;
+}
+
+.sim-field input:focus,
+.sim-field select:focus,
+.sim-field textarea:focus {
+  outline: none;
+  border-color: #D4F223;
+}
+
+.sim-field input::placeholder,
+.sim-field textarea::placeholder {
+  color: #444;
+}
+
+/* Date Input — Full-Click Calendar */
+.sim-field input[type="date"] {
+  cursor: pointer;
+  color-scheme: dark;
+  position: relative;
+}
+
+.sim-field input[type="date"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  filter: invert(0.9) sepia(1) saturate(5) hue-rotate(25deg) brightness(1.3);
+  opacity: 1;
+  width: 28px;
+  height: 28px;
+  padding: 6px;
+  border-radius: 6px;
+  background-color: rgba(212, 242, 35, 0.15);
+  border: 1px solid rgba(212, 242, 35, 0.3);
+  transition: all 0.25s ease;
+  box-shadow: 0 0 8px rgba(212, 242, 35, 0.15);
+}
+
+.sim-field input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  background-color: rgba(212, 242, 35, 0.35);
+  transform: scale(1.15);
+  box-shadow: 0 0 16px rgba(212, 242, 35, 0.3);
+  border-color: rgba(212, 242, 35, 0.5);
+}
+
+.sim-hint {
+  display: block;
+  color: #555;
+  font-size: 11px;
+  margin-top: 4px;
+}
+
+.sim-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.sim-field textarea {
+  resize: vertical;
+  min-height: 70px;
+}
+
+/* Select dropdown dark */
+.sim-field select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 36px;
+}
+
+.sim-field select option {
+  background: #111;
+  color: #ddd;
+}
+
+/* Actions */
+.sim-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 24px;
+  padding-top: 18px;
+  border-top: 1px solid #222;
+}
+
+.sim-btn-cancel,
+.sim-btn-submit {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 22px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  font-family: inherit;
+}
+
+.sim-btn-cancel {
+  background: #1a1a1a;
+  color: #999;
+  border: 1px solid #333;
+}
+
+.sim-btn-cancel:hover:not(:disabled) {
+  border-color: #555;
+  color: #ddd;
+}
+
+.sim-btn-submit {
+  background: #D4F223;
+  color: #0A0A0A;
+}
+
+.sim-btn-submit:hover:not(:disabled) {
+  background: #e8ff5a;
+  transform: translateY(-1px);
+}
+
+.sim-btn-submit:disabled,
+.sim-btn-cancel:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.sim-btn-spinner {
+  width: 14px; height: 14px;
+  border: 2px solid rgba(0,0,0,0.2);
+  border-top-color: #0A0A0A;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  display: inline-block;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Info Box */
+.sim-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 24px 24px;
+  padding: 12px 16px;
+  background: rgba(212, 242, 35, 0.05);
+  border: 1px solid rgba(212, 242, 35, 0.12);
+  border-radius: 8px;
+  color: #777;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.sim-info svg { flex-shrink: 0; color: #D4F223; }
+
+/* Scrollbar */
+.sim-modal::-webkit-scrollbar { width: 6px; }
+.sim-modal::-webkit-scrollbar-track { background: transparent; }
+.sim-modal::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .sim-modal { width: 96%; max-height: 95vh; }
+  .sim-row { grid-template-columns: 1fr; }
+  .sim-header { padding: 16px 20px; }
+  .sim-form { padding: 0 20px 16px; }
+  .sim-candidate { margin: 12px 20px; }
+  .sim-info { margin: 0 20px 20px; }
+  .sim-actions { flex-direction: column; }
+}

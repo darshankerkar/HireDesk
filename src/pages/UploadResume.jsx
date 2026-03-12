@@ -6,9 +6,14 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import confetti from 'canvas-confetti';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../utils/api';
+import axios from 'axios';
+import config from '../../config';
 
 export default function UploadResume() {
   const { currentUser } = useAuth();
+  const storedUserData = JSON.parse(localStorage.getItem('userData') || '{}');
+  const sessionEmail = currentUser?.email || storedUserData?.email;
+  const sessionRole = storedUserData?.role;
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [jobs, setJobs] = useState([]);
@@ -18,10 +23,10 @@ export default function UploadResume() {
   const [uploadedFile, setUploadedFile] = useState(null);
 
   useEffect(() => {
-    if (currentUser) {
+    if (sessionEmail) {
       fetchJobs();
     }
-  }, [currentUser]);
+  }, [sessionEmail]);
 
   // Auto-select job from URL params
   useEffect(() => {
@@ -37,11 +42,18 @@ export default function UploadResume() {
 
   const fetchJobs = async () => {
     try {
-      const response = await api.get('/recruitment/jobs/');
-      // Show ALL jobs to everyone (both candidates and recruiters)
-      setJobs(response.data);
+      if (sessionRole === 'RECRUITER') {
+        const response = await axios.get(
+          `${config.apiUrl}/api/recruitment/jobs/?posted_by_email=${encodeURIComponent(sessionEmail || '')}`
+        );
+        setJobs(Array.isArray(response.data) ? response.data : []);
+      } else {
+        const response = await axios.get(`${config.apiUrl}/api/recruitment/jobs/`);
+        setJobs(Array.isArray(response.data) ? response.data : []);
+      }
     } catch (error) {
       console.error('Error fetching jobs:', error);
+      setJobs([]);
     }
   };
 
@@ -75,6 +87,9 @@ export default function UploadResume() {
     const formData = new FormData();
     formData.append('file', uploadedFile);
     formData.append('job_id', selectedJob);
+    if (sessionEmail) {
+      formData.append('user_email', sessionEmail);
+    }
 
     try {
       const response = await api.post('/recruitment/upload-resume/', formData, {
@@ -91,18 +106,37 @@ export default function UploadResume() {
       });
 
       // Track application in localStorage for frontend filtering
-      if (currentUser?.email) {
-        const storageKey = `applications_${currentUser.email}`;
+      if (sessionEmail) {
+        const storageKey = `applications_${sessionEmail}`;
         const existingApplications = JSON.parse(localStorage.getItem(storageKey) || '[]');
         if (!existingApplications.includes(parseInt(selectedJob))) {
           existingApplications.push(parseInt(selectedJob));
           localStorage.setItem(storageKey, JSON.stringify(existingApplications));
         }
+
+        // Also store richer candidate data for dashboard stats
+        const candidateData = response.data?.candidate;
+        if (candidateData) {
+          const richKey = `candidate_apps_${sessionEmail}`;
+          const richApps = JSON.parse(localStorage.getItem(richKey) || '[]');
+          // Avoid duplicates by job
+          if (!richApps.some(a => a.job === candidateData.job)) {
+            richApps.push({
+              id: candidateData.id,
+              name: candidateData.name,
+              job: candidateData.job,
+              job_title: candidateData.job_title || '',
+              score: candidateData.score || 0,
+              created_at: candidateData.created_at || new Date().toISOString()
+            });
+            localStorage.setItem(richKey, JSON.stringify(richApps));
+          }
+        }
       }
 
       setUploadStatus({
         type: 'success',
-        message: currentUser?.role === 'CANDIDATE' 
+        message: sessionRole === 'CANDIDATE' 
           ? 'Resume uploaded and processed successfully! Redirecting...' 
           : 'Resume uploaded and processed successfully!'
       });
@@ -111,7 +145,7 @@ export default function UploadResume() {
 
       // Only redirect candidates to check their application status
       // Recruiters stay on the upload page to continue uploading resumes
-      if (currentUser?.role === 'CANDIDATE') {
+      if (sessionRole === 'CANDIDATE') {
         setTimeout(() => {
           navigate('/candidate-jobs');
         }, 1500);

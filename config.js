@@ -22,11 +22,10 @@ const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
 export const auth = getAuth(app);
 
-// Backend API URL
+// Backend API URL - reads from VITE_API_URL env variable
+// Set in .env (local dev) and .env.production (production build)
 const config = {
-  apiUrl: import.meta.env.PROD 
-    ? 'https://hiredesk-backend.onrender.com'
-    : 'http://localhost:8000'
+  apiUrl: (import.meta.env.VITE_API_URL || 'http://localhost:8000').replace(/\/api\/?$/, '')
 };
 
 export default config;

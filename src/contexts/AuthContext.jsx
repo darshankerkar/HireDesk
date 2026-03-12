@@ -31,6 +31,11 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
+    // Clear all session data on logout
+    localStorage.removeItem('userData');
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    localStorage.removeItem('firebaseUser');
     return signOut(auth);
   };
 

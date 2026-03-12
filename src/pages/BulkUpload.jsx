@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Upload, FileSpreadsheet, AlertCircle, CheckCircle, XCircle, Loader } from 'lucide-react';
 import api from '../utils/api';
+import axios from 'axios';
+import config from '../../config';
 
 const BulkUpload = () => {
   const [file, setFile] = useState(null);
@@ -9,6 +11,9 @@ const BulkUpload = () => {
   const [uploading, setUploading] = useState(false);
   const [results, setResults] = useState(null);
   const [error, setError] = useState('');
+  const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+  const sessionEmail = userData?.email || '';
+  const sessionRole = userData?.role || '';
 
   // Fetch jobs on component mount
   React.useEffect(() => {
@@ -17,10 +22,18 @@ const BulkUpload = () => {
 
   const fetchJobs = async () => {
     try {
-      const response = await api.get('/recruitment/jobs/');
-      setJobs(response.data);
+      if (sessionRole === 'RECRUITER') {
+        const response = await axios.get(
+          `${config.apiUrl}/api/recruitment/jobs/?posted_by_email=${encodeURIComponent(sessionEmail || '')}`
+        );
+        setJobs(Array.isArray(response.data) ? response.data : []);
+      } else {
+        const response = await axios.get(`${config.apiUrl}/api/recruitment/jobs/`);
+        setJobs(Array.isArray(response.data) ? response.data : []);
+      }
     } catch (err) {
       console.error('Failed to fetch jobs:', err);
+      setJobs([]);
     }
   };
 

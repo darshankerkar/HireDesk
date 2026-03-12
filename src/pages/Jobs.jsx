@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Briefcase, Users, ChevronRight, ChevronDown, Download, Edit2, Clock } from 'lucide-react';
+import { Briefcase, Users, ChevronRight, ChevronDown, Download, Edit2, Clock, Calendar } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
-import api from '../utils/api';
+import axios from 'axios';
+import config from '../../config';
 import { useAuth } from '../contexts/AuthContext';
 import AddJobModal from '../components/AddJobModal';
 import EditJobModal from '../components/EditJobModal';
 import CandidateProfileModal from '../components/CandidateProfileModal';
+import ScheduleInterviewModal from '../components/ScheduleInterviewModal';
 
 export default function Jobs() {
   const { currentUser } = useAuth();
@@ -19,39 +21,43 @@ export default function Jobs() {
   const [jobToEdit, setJobToEdit] = useState(null);
   const [selectedCandidate, setSelectedCandidate] = useState(null);
   const [profileModalOpen, setProfileModalOpen] = useState(false);
+  const [scheduleModalOpen, setScheduleModalOpen] = useState(false);
+  const [candidateToInterview, setCandidateToInterview] = useState(null);
 
   useEffect(() => {
-    if (currentUser) {
+    const accessToken = localStorage.getItem('access_token');
+    const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+    if (accessToken && (currentUser || userData?.email)) {
       fetchJobs();
     }
   }, [currentUser]);
 
   const fetchJobs = async () => {
     try {
-      const response = await api.get('/recruitment/jobs/');
       const userData = JSON.parse(localStorage.getItem('userData') || '{}');
       const isRecruiter = userData.role === 'RECRUITER';
-      
+      const sessionEmail = currentUser?.email || userData?.email;
+
       if (isRecruiter) {
-        // Recruiters only see their own jobs
-        const userJobs = response.data.filter(job => 
-          job.posted_by_email === currentUser?.email
+        const response = await axios.get(
+          `${config.apiUrl}/api/recruitment/jobs/?posted_by_email=${encodeURIComponent(sessionEmail || '')}`
         );
-        setJobs(userJobs);
+        setJobs(Array.isArray(response.data) ? response.data : []);
       } else {
-        // Candidates see ALL jobs
-        setJobs(response.data);
+        const response = await axios.get(`${config.apiUrl}/api/recruitment/jobs/`);
+        setJobs(Array.isArray(response.data) ? response.data : []);
       }
     } catch (error) {
       console.error('Error fetching jobs:', error);
+      setJobs([]);
     }
   };
 
   const fetchCandidates = async (jobId) => {
     setLoadingCandidates(true);
     try {
-      const response = await api.get(`/recruitment/jobs/${jobId}/candidates/`);
-      setCandidates(response.data);
+      const response = await axios.get(`${config.apiUrl}/api/recruitment/jobs/${jobId}/candidates/`);
+      setCandidates(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error('Error fetching candidates:', error);
       setCandidates([]);
@@ -93,7 +99,7 @@ export default function Jobs() {
     }
 
     try {
-      const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api';
+      const apiBaseUrl = import.meta.env.VITE_API_URL || '/api';
       const downloadUrl = `${apiBaseUrl}${candidate.resume.download_url}`;
       
       // Fetch the file as a blob
@@ -118,6 +124,16 @@ export default function Jobs() {
   const handleCandidateClick = (candidate) => {
     setSelectedCandidate(candidate);
     setProfileModalOpen(true);
+  };
+
+  const handleScheduleInterview = (e, candidate) => {
+    e.stopPropagation(); // Prevent row click
+    
+    // Find the job object for this candidate
+    const job = jobs.find(j => j.id === selectedJobId);
+    
+    setCandidateToInterview({ ...candidate, job });
+    setScheduleModalOpen(true);
   };
 
   const formatUploadTime = (dateString) => {
@@ -288,13 +304,22 @@ export default function Jobs() {
                                       </div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                      <button 
-                                        onClick={(e) => handleDownloadResume(e, candidate)}
-                                        className="text-gray-400 hover:text-primary transition-colors"
-                                        title="Download Resume"
-                                      >
-                                        <Download className="h-5 w-5" />
-                                      </button>
+                                      <div className="flex items-center justify-end gap-2">
+                                        <button 
+                                          onClick={(e) => handleScheduleInterview(e, candidate)}
+                                          className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-colors"
+                                          title="Schedule Interview"
+                                        >
+                                          <Calendar className="h-5 w-5" />
+                                        </button>
+                                        <button 
+                                          onClick={(e) => handleDownloadResume(e, candidate)}
+                                          className="p-2 text-gray-400 hover:text-primary hover:bg-white/5 rounded-lg transition-colors"
+                                          title="Download Resume"
+                                        >
+                                          <Download className="h-5 w-5" />
+                                        </button>
+                                      </div>
                                     </td>
                                   </motion.tr>
                                 ))}
@@ -329,6 +354,20 @@ export default function Jobs() {
         isOpen={profileModalOpen}
         onClose={() => setProfileModalOpen(false)}
         candidate={selectedCandidate}
+      />
+
+      <ScheduleInterviewModal
+        isOpen={scheduleModalOpen}
+        onClose={() => {
+          setScheduleModalOpen(false);
+          setCandidateToInterview(null);
+        }}
+        candidate={candidateToInterview}
+        onScheduled={() => {
+          setScheduleModalOpen(false);
+          setCandidateToInterview(null);
+          toast.success('Interview scheduled successfully!');
+        }}
       />
     </div>
   );

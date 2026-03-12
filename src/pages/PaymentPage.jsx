@@ -1,93 +1,300 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Check, CreditCard, Zap, TrendingUp, Shield, ArrowRight } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import {
+  Check, CreditCard, Zap, TrendingUp, Shield, ArrowRight, Gift,
+  Monitor, Globe, Sparkles, Tag, Star
+} from 'lucide-react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import axios from 'axios';
 import config from '../../config';
+import { getBranding } from '../utils/branding';
+
+const PRICING = {
+  usd: {
+    symbol: '$',
+    starter: 5,
+    pro: 19,
+    monitor5: 5,
+    monitor50: 10,
+    label: 'USD',
+  },
+  inr: {
+    symbol: '₹',
+    starter: 450,
+    pro: 1599,
+    monitor5: 399,
+    monitor50: 799,
+    label: 'INR',
+  },
+};
 
 export default function PaymentPage() {
-  const [selectedPlan, setSelectedPlan] = useState('BASIC');
-  const [loading, setLoading] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState('STARTER');
+  const [loading, setLoading] = useState('');
   const [error, setError] = useState('');
+  const [couponCode, setCouponCode] = useState('');
+  const [redeemingCoupon, setRedeemingCoupon] = useState(false);
+  const [currency, setCurrency] = useState('usd');
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+
+  // Detect region for currency
+  useEffect(() => {
+    detectRegion();
+    if (searchParams.get('canceled')) {
+      toast.error('Payment was canceled.');
+    }
+  }, []);
+
+  const detectRegion = async () => {
+    try {
+      const resp = await fetch('https://ipapi.co/json/');
+      const data = await resp.json();
+      if (data.country_code === 'IN') {
+        setCurrency('inr');
+      }
+    } catch {
+      // Default USD
+    }
+  };
+
+  const p = PRICING[currency];
 
   const plans = [
     {
-      id: 'BASIC',
-      name: 'Basic',
-      price: '$10',
+      id: 'STARTER',
+      name: 'Starter',
+      price: `${p.symbol}${p.starter}`,
       period: 'month',
       features: [
-        'Post unlimited jobs',
-        'Upload up to 100 resumes/month',
-        'AI-powered candidate scoring',
-        'Basic analytics dashboard',
-        'Email support'
+        'Unlimited resume scoring',
+        'Bulk upload resumes',
+        'JD matching & ranking',
+        'Recruiter dashboard',
+        'Basic analytics',
+        '10 interview sessions/month',
       ],
       icon: Zap,
-      popular: true
+      popular: true,
     },
     {
       id: 'PRO',
       name: 'Pro',
-      price: '$20',
+      price: `${p.symbol}${p.pro}`,
       period: 'month',
       features: [
-        'Everything in Basic',
-        'Unlimited resume uploads',
+        'Everything in Starter',
+        '50 interviews/month',
+        'AI proctoring & monitoring',
         'Advanced analytics & insights',
-        'Priority email support',
-        'API access',
-        'Custom branding'
+        'Priority support',
+        'Custom branding',
       ],
       icon: TrendingUp,
-      popular: false
-    }
+      popular: false,
+    },
   ];
 
-  const handlePayment = async () => {
-    setLoading(true);
+  const monitoringPacks = [
+    {
+      id: 'SMALL',
+      name: '5 Monitored Interviews',
+      price: `${p.symbol}${p.monitor5}`,
+      credits: 5,
+      icon: Monitor,
+    },
+    {
+      id: 'LARGE',
+      name: '50 Monitored Interviews',
+      price: `${p.symbol}${p.monitor50}`,
+      credits: 50,
+      icon: Monitor,
+      badge: 'Best Value',
+    },
+  ];
+
+  const getAccessToken = () => {
+    const token = localStorage.getItem('access_token');
+    if (!token) throw new Error('Not authenticated. Please login again.');
+    return token;
+  };
+
+  const handleSubscribe = async (plan) => {
+    setLoading(plan);
     setError('');
-
     try {
-      // Get the Django JWT token from localStorage
-      const accessToken = localStorage.getItem('access_token');
-      
-      if (!accessToken) {
-        throw new Error('Not authenticated. Please login again.');
-      }
-
-      // Call backend payment endpoint
+      const accessToken = getAccessToken();
+      // Step 1: Create Razorpay order on backend
       const response = await axios.post(
-        `${config.apiUrl}/api/auth/payment/`,
-        { plan: selectedPlan },
-        {
-          headers: {
-            'Authorization': `Bearer ${accessToken}`,
-            'Content-Type': 'application/json'
-          }
-        }
+        `${config.apiUrl}/api/auth/razorpay/create-order/`,
+        { plan, currency },
+        { headers: { Authorization: `Bearer ${accessToken}` } }
       );
 
-      if (response.data.is_paid) {
-        // Update local storage with payment status
-        const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-        userData.is_paid = true;
-        userData.subscription_plan = selectedPlan;
-        localStorage.setItem('userData', JSON.stringify(userData));
+      const { order_id, amount, currency: orderCurrency, key_id, user_email, user_name, description } = response.data;
 
-        // Force full page reload to update App.jsx state
-        toast.success('Payment successful! Redirecting to dashboard...');
-        setTimeout(() => {
-          window.location.href = '/recruiter-dashboard';
-        }, 1500);
-      }
+      // Step 2: Open Razorpay checkout popup
+      const options = {
+        key: key_id,
+        amount: amount,
+        currency: orderCurrency,
+        name: getBranding().appName,
+        description: description,
+        order_id: order_id,
+        handler: async function (paymentResponse) {
+          // Step 3: Verify payment on backend
+          try {
+            const verifyResponse = await axios.post(
+              `${config.apiUrl}/api/auth/razorpay/verify-payment/`,
+              {
+                razorpay_order_id: paymentResponse.razorpay_order_id,
+                razorpay_payment_id: paymentResponse.razorpay_payment_id,
+                razorpay_signature: paymentResponse.razorpay_signature,
+                plan: plan,
+                currency: currency,
+              },
+              { headers: { Authorization: `Bearer ${accessToken}` } }
+            );
+
+            if (verifyResponse.data.success) {
+              const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+              userData.is_paid = true;
+              userData.subscription_plan = plan;
+              if (verifyResponse.data.user) {
+                Object.assign(userData, verifyResponse.data.user);
+              }
+              localStorage.setItem('userData', JSON.stringify(userData));
+              toast.success(verifyResponse.data.message || 'Payment successful!');
+              setTimeout(() => { window.location.href = '/recruiter-dashboard'; }, 1000);
+            }
+          } catch (verifyErr) {
+            console.error('Payment verification error:', verifyErr);
+            setError(verifyErr.response?.data?.error || 'Payment verification failed.');
+          }
+        },
+        prefill: {
+          email: user_email,
+          name: user_name,
+        },
+        theme: {
+          color: '#6366f1',
+        },
+        modal: {
+          ondismiss: function () {
+            setLoading('');
+            toast.error('Payment cancelled.');
+          },
+        },
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.on('payment.failed', function (response) {
+        setError(`Payment failed: ${response.error.description}`);
+        setLoading('');
+      });
+      rzp.open();
     } catch (err) {
-      console.error('Payment error:', err);
-      setError(err.response?.data?.error || err.message || 'Payment failed. Please try again.');
+      console.error('Checkout error:', err);
+      setError(err.response?.data?.error || err.message || 'Failed to start checkout.');
+      setLoading('');
+    }
+  };
+
+  const handleMonitoringPurchase = async (pack) => {
+    const planKey = pack === 'SMALL' ? 'MONITOR_5' : 'MONITOR_50';
+    setLoading(`monitor_${pack}`);
+    setError('');
+    try {
+      const accessToken = getAccessToken();
+      const response = await axios.post(
+        `${config.apiUrl}/api/auth/razorpay/create-order/`,
+        { plan: planKey, currency },
+        { headers: { Authorization: `Bearer ${accessToken}` } }
+      );
+
+      const { order_id, amount, currency: orderCurrency, key_id, user_email, user_name, description } = response.data;
+
+      const options = {
+        key: key_id,
+        amount: amount,
+        currency: orderCurrency,
+        name: getBranding().appName,
+        description: description,
+        order_id: order_id,
+        handler: async function (paymentResponse) {
+          try {
+            const verifyResponse = await axios.post(
+              `${config.apiUrl}/api/auth/razorpay/verify-payment/`,
+              {
+                razorpay_order_id: paymentResponse.razorpay_order_id,
+                razorpay_payment_id: paymentResponse.razorpay_payment_id,
+                razorpay_signature: paymentResponse.razorpay_signature,
+                plan: planKey,
+                currency: currency,
+              },
+              { headers: { Authorization: `Bearer ${accessToken}` } }
+            );
+
+            if (verifyResponse.data.success) {
+              toast.success(verifyResponse.data.message || 'Purchase successful!');
+              setTimeout(() => { window.location.reload(); }, 1000);
+            }
+          } catch (verifyErr) {
+            setError(verifyErr.response?.data?.error || 'Payment verification failed.');
+          }
+        },
+        prefill: {
+          email: user_email,
+          name: user_name,
+        },
+        theme: {
+          color: '#6366f1',
+        },
+        modal: {
+          ondismiss: function () {
+            setLoading('');
+          },
+        },
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.on('payment.failed', function (response) {
+        setError(`Payment failed: ${response.error.description}`);
+        setLoading('');
+      });
+      rzp.open();
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to start checkout.');
     } finally {
-      setLoading(false);
+      setLoading('');
+    }
+  };
+
+  const handleRedeemCoupon = async () => {
+    if (!couponCode.trim()) return;
+    setRedeemingCoupon(true);
+    setError('');
+    try {
+      const accessToken = getAccessToken();
+      const response = await axios.post(
+        `${config.apiUrl}/api/auth/redeem-coupon/`,
+        { code: couponCode },
+        { headers: { Authorization: `Bearer ${accessToken}` } }
+      );
+
+      const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+      userData.is_paid = true;
+      userData.subscription_plan = 'PRO';
+      userData.beta_access = true;
+      localStorage.setItem('userData', JSON.stringify(userData));
+
+      toast.success(response.data.message);
+      setTimeout(() => { window.location.href = '/recruiter-dashboard'; }, 1500);
+    } catch (err) {
+      setError(err.response?.data?.error || 'Invalid coupon code.');
+    } finally {
+      setRedeemingCoupon(false);
     }
   };
 
@@ -98,20 +305,34 @@ export default function PaymentPage() {
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-16"
+          className="text-center mb-12"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/30 rounded-full mb-6">
-            <Shield className="h-4 w-4 text-primary" />
-            <span className="text-sm text-primary font-medium">Demo Payment Mode</span>
-          </div>
-          
           <h1 className="text-5xl md:text-6xl font-display font-bold text-white mb-4">
             Choose Your <span className="text-primary">Plan</span>
           </h1>
-          <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-            Unlock the full power of HireDesk's AI-driven recruitment platform.
-            No credit card required - this is a demo!
+          <p className="text-xl text-gray-400 max-w-2xl mx-auto mb-6">
+            Unlock the full power of {getBranding().appName}'s AI-driven recruitment platform.
           </p>
+
+          {/* Currency Toggle */}
+          <div className="inline-flex items-center gap-2 bg-surface border border-gray-800 rounded-full p-1">
+            <button
+              onClick={() => setCurrency('usd')}
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                currency === 'usd' ? 'bg-primary text-dark' : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              <Globe className="h-4 w-4 inline mr-1" /> USD
+            </button>
+            <button
+              onClick={() => setCurrency('inr')}
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                currency === 'inr' ? 'bg-primary text-dark' : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              🇮🇳 INR
+            </button>
+          </div>
         </motion.div>
 
         {/* Error Message */}
@@ -126,45 +347,40 @@ export default function PaymentPage() {
         )}
 
         {/* Pricing Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
           {plans.map((plan, index) => (
             <motion.div
               key={plan.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
-              onClick={() => setSelectedPlan(plan.id)}
-              className={`relative cursor-pointer rounded-3xl p-8 border-2 transition-all duration-300 ${
+              className={`relative rounded-3xl p-8 border-2 transition-all duration-300 ${
                 selectedPlan === plan.id
-                  ? 'border-primary bg-primary/5 scale-105'
+                  ? 'border-primary bg-primary/5 scale-[1.02]'
                   : 'border-gray-800 bg-surface hover:border-gray-700'
               }`}
             >
               {plan.popular && (
                 <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                  <div className="bg-primary text-dark text-xs font-bold px-4 py-1 rounded-full">
-                    RECOMMENDED
+                  <div className="bg-primary text-dark text-xs font-bold px-4 py-1 rounded-full flex items-center gap-1">
+                    <Star className="h-3 w-3" /> RECOMMENDED
                   </div>
                 </div>
               )}
 
-              {/* Icon */}
               <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-6 ${
                 selectedPlan === plan.id ? 'bg-primary/20' : 'bg-gray-800'
               }`}>
                 <plan.icon className={`h-8 w-8 ${selectedPlan === plan.id ? 'text-primary' : 'text-gray-400'}`} />
               </div>
 
-              {/* Plan Name */}
               <h3 className="text-2xl font-bold text-white mb-2">{plan.name}</h3>
 
-              {/* Price */}
               <div className="flex items-baseline gap-2 mb-6">
                 <span className="text-5xl font-bold text-primary">{plan.price}</span>
                 <span className="text-gray-400">/ {plan.period}</span>
               </div>
 
-              {/* Features */}
               <ul className="space-y-4 mb-8">
                 {plan.features.map((feature, i) => (
                   <li key={i} className="flex items-start gap-3">
@@ -174,62 +390,124 @@ export default function PaymentPage() {
                 ))}
               </ul>
 
-              {/* Selection Indicator */}
-              {selectedPlan === plan.id && (
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  className="absolute top-8 right-8 w-8 h-8 bg-primary rounded-full flex items-center justify-center"
-                >
-                  <Check className="h-5 w-5 text-dark" />
-                </motion.div>
-              )}
+              <button
+                onClick={() => handleSubscribe(plan.id)}
+                disabled={loading === plan.id}
+                className="w-full py-3 bg-primary text-dark font-bold rounded-xl hover:bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {loading === plan.id ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-dark/30 border-t-dark rounded-full animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <CreditCard className="h-5 w-5" />
+                    Subscribe to {plan.name}
+                    <ArrowRight className="h-4 w-4" />
+                  </>
+                )}
+              </button>
             </motion.div>
           ))}
         </div>
 
-        {/* Payment Button */}
+        {/* Monitoring Add-Ons */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
-          className="max-w-md mx-auto"
+          className="mb-16"
         >
-          <button
-            onClick={handlePayment}
-            disabled={loading}
-            className="w-full py-4 px-8 bg-primary text-dark font-bold text-lg rounded-full hover:bg-white transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 group"
-          >
-            {loading ? (
-              <>
-                <div className="w-5 h-5 border-2 border-dark/30 border-t-dark rounded-full animate-spin" />
-                Processing...
-              </>
-            ) : (
-              <>
-                <CreditCard className="h-5 w-5" />
-                Complete Payment (Demo)
-                <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
-              </>
-            )}
-          </button>
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold text-white mb-2 flex items-center justify-center gap-2">
+              <Monitor className="h-7 w-7 text-primary" />
+              Monitoring Add-On Packs
+            </h2>
+            <p className="text-gray-400">Add AI-proctored interview monitoring to any plan</p>
+          </div>
 
-          <p className="text-center text-gray-500 text-sm mt-4">
-            🎭 This is a demo payment. Clicking "Complete Payment" will instantly activate your account.
-          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
+            {monitoringPacks.map((pack, i) => (
+              <motion.div
+                key={pack.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 + i * 0.1 }}
+                className="relative bg-surface border border-gray-800 rounded-2xl p-6 hover:border-primary/50 transition-all"
+              >
+                {pack.badge && (
+                  <div className="absolute -top-3 right-4">
+                    <span className="bg-amber-500 text-dark text-xs font-bold px-3 py-1 rounded-full">
+                      {pack.badge}
+                    </span>
+                  </div>
+                )}
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
+                    <pack.icon className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-white">{pack.name}</h4>
+                    <p className="text-2xl font-bold text-primary">{pack.price}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => handleMonitoringPurchase(pack.id)}
+                  disabled={loading === `monitor_${pack.id}`}
+                  className="w-full py-2 bg-gray-800 text-white font-medium rounded-xl hover:bg-gray-700 transition-colors disabled:opacity-50 text-sm"
+                >
+                  {loading === `monitor_${pack.id}` ? 'Processing...' : 'Buy Now'}
+                </button>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Beta Coupon Section */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+          className="max-w-lg mx-auto mb-16"
+        >
+          <div className="bg-gradient-to-br from-primary/10 to-purple-500/10 border border-primary/30 rounded-2xl p-8 text-center">
+            <Sparkles className="h-8 w-8 text-primary mx-auto mb-4" />
+            <h3 className="text-xl font-bold text-white mb-2">Founder's Beta Access</h3>
+            <p className="text-gray-400 text-sm mb-6">
+              Got a beta code? Unlock 14 days of full PRO access — no credit card required.
+            </p>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={couponCode}
+                onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                placeholder="Enter coupon code"
+                className="flex-1 px-4 py-3 bg-dark border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-primary transition-colors font-mono tracking-wider text-center"
+              />
+              <button
+                onClick={handleRedeemCoupon}
+                disabled={redeemingCoupon || !couponCode.trim()}
+                className="px-6 py-3 bg-primary text-dark font-bold rounded-xl hover:bg-white transition-colors disabled:opacity-50 flex items-center gap-2"
+              >
+                <Gift className="h-4 w-4" />
+                {redeemingCoupon ? '...' : 'Redeem'}
+              </button>
+            </div>
+          </div>
         </motion.div>
 
         {/* Benefits Section */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-          className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6"
+          transition={{ delay: 0.6 }}
+          className="grid grid-cols-1 md:grid-cols-3 gap-6"
         >
           {[
-            { icon: Shield, title: 'Secure & Trusted', desc: 'Enterprise-grade security' },
+            { icon: Shield, title: 'Secure Payments', desc: 'Powered by Razorpay' },
             { icon: Zap, title: 'Instant Access', desc: 'Start recruiting immediately' },
-            { icon: TrendingUp, title: 'Scale Anytime', desc: 'Upgrade or downgrade easily' }
+            { icon: TrendingUp, title: 'Scale Anytime', desc: 'Upgrade or downgrade easily' },
           ].map((benefit, i) => (
             <div key={i} className="text-center p-6 bg-surface rounded-2xl border border-gray-800">
               <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">

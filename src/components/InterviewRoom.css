@@ -1,0 +1,6 @@
+.interview-room {
+  min-height: 100vh;
+  background-color: #0A0A0A;
+}
+
+/* Removed custom gradients - using tailwind classes in JSX */

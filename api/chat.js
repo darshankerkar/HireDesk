@@ -26,7 +26,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { message, jobsContext } = req.body;
+    const { message, jobsContext, systemPrompt } = req.body;
 
     // Validate input
     if (!message || typeof message !== 'string') {
@@ -34,10 +34,10 @@ export default async function handler(req, res) {
     }
 
     // Initialize Gemini with server-side API key
-    const apiKey = process.env.VITE_GEMINI_API_KEY;
+    const apiKey = process.env.GEMINI_API_KEY;
     
     if (!apiKey) {
-      console.error('VITE_GEMINI_API_KEY is not set');
+      console.error('GEMINI_API_KEY is not set');
       return res.status(500).json({ error: 'Server configuration error' });
     }
 
@@ -52,8 +52,8 @@ export default async function handler(req, res) {
       `Candidates: ${job.candidate_count || 0}\n`
     ).join('\n---\n') : 'No jobs currently available.';
 
-    // Construct the system prompt with job context
-    const systemPrompt = `You are HireDesk's AI assistant, helping job seekers understand available positions.
+    // Construct the system prompt with job context if the client did not supply one.
+    const fallbackPrompt = `You are HireDesk's AI assistant, helping job seekers understand available positions.
 
 Current job openings:
 ${jobsData}
@@ -68,7 +68,7 @@ Your role:
 Keep responses brief (2-3 sentences unless more detail is requested).`;
 
     // Combine system prompt with user message
-    const fullPrompt = `${systemPrompt}\n\nUser Question: ${message}`;
+    const fullPrompt = `${systemPrompt || fallbackPrompt}\n\nUser Question: ${message}`;
 
     // Generate response
     const result = await model.generateContent(fullPrompt);

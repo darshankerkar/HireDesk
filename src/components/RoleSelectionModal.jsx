@@ -3,11 +3,13 @@ import { motion } from 'framer-motion';
 import { Users, Briefcase, ArrowRight, X } from 'lucide-react';
 import SignUpModal from './SignUpModal';
 import LoginModal from './LoginModal';
+import { useBranding } from '../contexts/BrandingContext';
 
 export default function RoleSelectionModal({ isOpen, onClose, mode = 'signup' }) {
   const [selectedRole, setSelectedRole] = useState(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const brand = useBranding();
 
   const handleRoleSelect = (role) => {
     setSelectedRole(role);
@@ -80,7 +82,7 @@ export default function RoleSelectionModal({ isOpen, onClose, mode = 'signup' })
             Choose Your Role
           </h2>
           <p className="text-gray-400 text-lg">
-            {mode === 'signup' ? 'Select how you want to use HireDesk' : 'Select your role to continue'}
+            {mode === 'signup' ? `Select how you want to use ${brand.appName}` : 'Select your role to continue'}
           </p>
         </div>
 

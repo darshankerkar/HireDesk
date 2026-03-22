@@ -9,11 +9,12 @@ const brands = {
     appNameParts: { first: 'Hire', highlight: 'Desk' },
     tagline: 'AI-powered recruitment automation software.',
     description: 'HireDesk is a subscription-based recruitment automation software.',
-    pageTitle: 'HireDesk – AI Recruitment Platform',
+    pageTitle: 'HireDesk - AI Recruitment Platform',
     logo: '/logo.png',
-    supportEmail: 'support@hiredesk.com',
-    contactEmail: 'contact@hiredesk.com',
-    copyright: `© ${new Date().getFullYear()} HireDesk. All rights reserved.`,
+    favicon: '/logo.png',
+    supportEmail: 'recridy@gmail.com',
+    contactEmail: 'recridy@gmail.com',
+    copyright: `(c) ${new Date().getFullYear()} HireDesk. All rights reserved.`,
     disclaimer: 'HireDesk is an AI-powered recruitment automation software. We do not provide direct job placement services.',
   },
   recrify: {
@@ -21,18 +22,16 @@ const brands = {
     appNameParts: { first: 'Recr', highlight: 'ify' },
     tagline: 'AI-powered recruitment software.',
     description: 'Recrify is a subscription-based recruitment software.',
-    pageTitle: 'Recrify – AI Hiring Intelligence Platform',
-    logo: '/logo.png',
-    supportEmail: 'support@recrify.co',
-    contactEmail: 'contact@recrify.co',
-    copyright: `© ${new Date().getFullYear()} Recrify. All rights reserved.`,
+    pageTitle: 'Recrify - AI Hiring Intelligence Platform',
+    logo: '/recrify-favicon.svg',
+    favicon: '/recrify-favicon.svg',
+    supportEmail: 'recridy@gmail.com',
+    contactEmail: 'recridy@gmail.com',
+    copyright: `(c) ${new Date().getFullYear()} Recrify. All rights reserved.`,
     disclaimer: 'Recrify is an AI-powered recruitment software. We do not provide direct job placement services.',
   },
 };
 
-/**
- * Detect which brand to use based on the current hostname.
- */
 export function getBranding() {
   if (typeof window === 'undefined') return brands.hiredesk;
 
@@ -42,7 +41,6 @@ export function getBranding() {
     return brands.recrify;
   }
 
-  // Default: hiredesk (covers duckdns, localhost, IP, etc.)
   return brands.hiredesk;
 }
 

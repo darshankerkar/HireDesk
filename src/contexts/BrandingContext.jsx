@@ -6,11 +6,9 @@ const BrandingContext = createContext(null);
 export function BrandingProvider({ children }) {
   const brand = getBranding();
 
-  // Update document title and meta tags based on domain
   useEffect(() => {
     document.title = brand.pageTitle;
 
-    // Update meta description
     let meta = document.querySelector('meta[name="description"]');
     if (!meta) {
       meta = document.createElement('meta');
@@ -18,6 +16,15 @@ export function BrandingProvider({ children }) {
       document.head.appendChild(meta);
     }
     meta.content = brand.description;
+
+    let favicon = document.querySelector('link[rel="icon"]');
+    if (!favicon) {
+      favicon = document.createElement('link');
+      favicon.rel = 'icon';
+      document.head.appendChild(favicon);
+    }
+    favicon.type = brand.favicon.endsWith('.svg') ? 'image/svg+xml' : 'image/png';
+    favicon.href = brand.favicon;
   }, [brand]);
 
   return (
@@ -29,6 +36,6 @@ export function BrandingProvider({ children }) {
 
 export function useBranding() {
   const ctx = useContext(BrandingContext);
-  if (!ctx) return getBranding(); // fallback
+  if (!ctx) return getBranding();
   return ctx;
 }

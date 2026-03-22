@@ -113,8 +113,7 @@ function AppContent() {
     if (['/terms', '/privacy', '/refund', '/contact', '/pricing'].includes(location.pathname)) {
       return (
         <div className="min-h-screen bg-dark text-secondary font-sans">
-          <Navbar />
-          <main className="pt-20">
+          <main>
             <Routes>
               <Route path="/terms" element={<TermsAndConditions />} />
               <Route path="/privacy" element={<PrivacyPolicy />} />
@@ -168,51 +167,23 @@ function AppContent() {
   const isPaid = userData.is_paid;
   const isEmailVerified = userData.is_email_verified !== false; // default true for existing users
   const isInterviewRoomRoute = location.pathname.startsWith('/interview/room/');
+  const isLegalPage = ['/terms', '/privacy', '/refund', '/contact', '/pricing'].includes(location.pathname);
+  const showNavbar = !isLegalPage && location.pathname !== '/payment' && !(isRecruiter && !isPaid);
+  const showChatBot = !isLegalPage && location.pathname !== '/payment';
 
-  // Email Verification Gate: Unverified users cannot access any features
-  if (!isEmailVerified) {
-    return (
-      <div className="min-h-screen bg-dark text-secondary font-sans">
-        <Navbar />
-        <main className="pt-20">
-          <Routes>
-            <Route path="/check-email" element={<CheckEmail />} />
-            <Route path="/verify-email/:token" element={<VerifyEmail />} />
-            <Route path="*" element={<Navigate to={`/check-email?email=${encodeURIComponent(userData.email || '')}`} replace />} />
-          </Routes>
-        </main>
-      </div>
-    );
-  }
+  // Email verification gate removed — users are auto-verified on registration
 
-  // Recruiter Payment Gate: Unpaid recruiters must go to payment page
-  if (isRecruiter && !isPaid && !isInterviewRoomRoute) {
-    return (
-      <div className="min-h-screen bg-dark text-secondary font-sans">
-        <Navbar />
-        <main className="pt-20">
-          <Routes>
-            <Route path="/payment" element={<PaymentPage />} />
-            <Route path="/payment/success" element={<PaymentSuccess />} />
-            <Route path="*" element={<Navigate to="/payment" replace />} />
-          </Routes>
-        </main>
-      </div>
-    );
-  }
+  // Payment gate removed — all users get full access on registration
 
-  // Determine default dashboard based on role and payment status
-  // Paid recruiters -> Recruiter Dashboard
-  // Unpaid recruiters -> Candidate Dashboard (can upload/apply like candidates)  
-  // Candidates -> Candidate Dashboard
-  const defaultDashboard = (isRecruiter && isPaid) ? '/recruiter-dashboard' : '/candidate-dashboard';
-  const defaultJobsPage = (isRecruiter && isPaid) ? '/jobs' : '/candidate-jobs';
+  // All users get full access (is_paid set to true on registration)
+  const defaultDashboard = isRecruiter ? '/recruiter-dashboard' : '/candidate-dashboard';
+  const defaultJobsPage = isRecruiter ? '/jobs' : '/candidate-jobs';
 
   // Show normal app with navbar if user is logged in and authorized
   return (
     <div className="min-h-screen bg-dark text-secondary font-sans">
-      <Navbar />
-      <main className="pt-20">
+      {showNavbar && <Navbar />}
+      <main className={showNavbar ? 'pt-20' : ''}>
         <Routes>
           {/* Home Page */}
           <Route path="/" element={<Home />} />
@@ -220,7 +191,7 @@ function AppContent() {
 
           {/* Recruiter Dashboard - PAID recruiters only */}
           <Route path="/recruiter-dashboard" element={
-            isRecruiter && isPaid ? (
+            isRecruiter ? (
               <ProtectedRoute>
                 <RecruiterDashboard />
               </ProtectedRoute>
@@ -231,7 +202,7 @@ function AppContent() {
 
           {/* Candidate Dashboard - Candidates AND unpaid recruiters */}
           <Route path="/candidate-dashboard" element={
-            !isRecruiter || (isRecruiter && !isPaid) ? (
+            !isRecruiter ? (
               <ProtectedRoute>
                 <CandidateDashboard />
               </ProtectedRoute>
@@ -242,7 +213,7 @@ function AppContent() {
 
           {/* Bulk Upload - Recruiters only */}
           <Route path="/bulk-upload" element={
-            isRecruiter && isPaid ? (
+            isRecruiter ? (
               <ProtectedRoute>
                 <BulkUpload />
               </ProtectedRoute>
@@ -278,7 +249,7 @@ function AppContent() {
 
           {/* Jobs - Recruiters only */}
           <Route path="/jobs" element={
-            isRecruiter && isPaid ? (
+            isRecruiter ? (
               <ProtectedRoute>
                 <Jobs />
               </ProtectedRoute>
@@ -296,7 +267,7 @@ function AppContent() {
 
           {/* Interviews Dashboard - Recruiters only */}
           <Route path="/interviews" element={
-            isRecruiter && isPaid ? (
+            isRecruiter ? (
               <ProtectedRoute>
                 <InterviewsDashboard />
               </ProtectedRoute>
@@ -309,6 +280,13 @@ function AppContent() {
           <Route path="/interview/room/:interviewId" element={
             <ProtectedRoute>
               <InterviewRoom />
+            </ProtectedRoute>
+          } />
+
+          {/* Payment Page */}
+          <Route path="/payment" element={
+            <ProtectedRoute>
+              <PaymentPage />
             </ProtectedRoute>
           } />
 
@@ -330,7 +308,7 @@ function AppContent() {
           <Route path="*" element={<Navigate to="/home" replace />} />
         </Routes>
       </main>
-      <ChatBot />
+      {showChatBot && <ChatBot />}
     </div>
   );
 }

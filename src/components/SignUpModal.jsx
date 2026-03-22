@@ -100,8 +100,7 @@ export default function SignUpModal({ isOpen, onClose, preselectedRole = null })
       const registerResponse = await axios.post(`${config.apiUrl}/api/auth/register/`, backendData);
       console.log('[SIGNUP] Step 1: Django register SUCCESS');
 
-      // STEP 2: Firebase signup - fire and forget (truly non-blocking)
-      // Needed for Google login later but NOT critical for OTP verification
+      // Firebase signup stays fire-and-forget for Google auth compatibility.
       console.log('[SIGNUP] Step 2: Firebase signup (fire-and-forget)...');
       signup(email, password).catch(firebaseErr => {
         console.log('[SIGNUP] Firebase background:', firebaseErr.code || firebaseErr.message);
@@ -110,7 +109,24 @@ export default function SignUpModal({ isOpen, onClose, preselectedRole = null })
         }
       });
 
-      // STEP 3: Store unverified user data and redirect to OTP page
+      const responseData = registerResponse.data || {};
+
+      if (responseData.requires_verification === false && responseData.access && responseData.refresh && responseData.user) {
+        localStorage.setItem('access_token', responseData.access);
+        localStorage.setItem('refresh_token', responseData.refresh);
+        localStorage.setItem('userData', JSON.stringify(responseData.user));
+        onClose();
+
+        if ((responseData.user.email || '').toLowerCase() === 'admin@recrify.co') {
+          toast.success('Test admin account created. Continue to payment to unlock paid access.');
+          window.location.href = '/payment';
+        } else {
+          toast.success(responseData.message || 'Account created successfully!');
+          window.location.href = '/';
+        }
+        return;
+      }
+
       const newUserData = {
         email: email,
         role: preselectedRole || 'CANDIDATE',
@@ -123,6 +139,11 @@ export default function SignUpModal({ isOpen, onClose, preselectedRole = null })
         monitoring_credits: 0,
       };
       localStorage.setItem('userData', JSON.stringify(newUserData));
+
+      if (responseData.email_sent === false) {
+        setError('Verification code could not be sent right now. Please contact recridy@gmail.com.');
+        return;
+      }
 
       console.log('[SIGNUP] Step 3: Redirecting to /check-email...');
       onClose();

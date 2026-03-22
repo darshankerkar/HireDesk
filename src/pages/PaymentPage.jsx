@@ -4,7 +4,7 @@ import {
   Check, CreditCard, Zap, TrendingUp, Shield, ArrowRight, Gift,
   Monitor, Globe, Sparkles, Tag, Star
 } from 'lucide-react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import axios from 'axios';
 import config from '../../config';
@@ -20,7 +20,7 @@ const PRICING = {
     label: 'USD',
   },
   inr: {
-    symbol: '₹',
+    symbol: '\u20B9',
     starter: 450,
     pro: 1599,
     monitor5: 399,
@@ -37,27 +37,12 @@ export default function PaymentPage() {
   const [redeemingCoupon, setRedeemingCoupon] = useState(false);
   const [currency, setCurrency] = useState('usd');
   const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
 
-  // Detect region for currency
   useEffect(() => {
-    detectRegion();
     if (searchParams.get('canceled')) {
       toast.error('Payment was canceled.');
     }
-  }, []);
-
-  const detectRegion = async () => {
-    try {
-      const resp = await fetch('https://ipapi.co/json/');
-      const data = await resp.json();
-      if (data.country_code === 'IN') {
-        setCurrency('inr');
-      }
-    } catch {
-      // Default USD
-    }
-  };
+  }, [searchParams]);
 
   const p = PRICING[currency];
 
@@ -76,7 +61,7 @@ export default function PaymentPage() {
         '10 interview sessions/month',
       ],
       icon: Zap,
-      popular: true,
+      popular: false,
     },
     {
       id: 'PRO',
@@ -92,7 +77,7 @@ export default function PaymentPage() {
         'Custom branding',
       ],
       icon: TrendingUp,
-      popular: false,
+      popular: true,
     },
   ];
 
@@ -120,83 +105,111 @@ export default function PaymentPage() {
     return token;
   };
 
+  const isAdminTestUser = () => {
+    try {
+      const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+      return (userData.email || '').toLowerCase() === 'admin@recrify.co';
+    } catch {
+      return false;
+    }
+  };
+
+  const loadCashfreeSdk = () => new Promise((resolve, reject) => {
+    if (window.Cashfree) {
+      resolve(window.Cashfree);
+      return;
+    }
+
+    const existing = document.querySelector('script[data-cashfree-sdk="true"]');
+    if (existing) {
+      existing.addEventListener('load', () => resolve(window.Cashfree), { once: true });
+      existing.addEventListener('error', () => reject(new Error('Failed to load Cashfree SDK.')), { once: true });
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.src = 'https://sdk.cashfree.com/js/v3/cashfree.js';
+    script.async = true;
+    script.dataset.cashfreeSdk = 'true';
+    script.onload = () => resolve(window.Cashfree);
+    script.onerror = () => reject(new Error('Failed to load Cashfree SDK.'));
+    document.body.appendChild(script);
+  });
+
+  const verifyCashfreeOrder = async (orderId, accessToken, successRedirect) => {
+    const verifyResponse = await axios.post(
+      `${config.apiUrl}/api/auth/cashfree/verify-payment/`,
+      { order_id: orderId },
+      { headers: { Authorization: `Bearer ${accessToken}` } }
+    );
+
+    if (verifyResponse.data.success) {
+      const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+      if (verifyResponse.data.user) {
+        Object.assign(userData, verifyResponse.data.user);
+        localStorage.setItem('userData', JSON.stringify(userData));
+      }
+      toast.success(verifyResponse.data.message || 'Payment successful!');
+      if (successRedirect === 'reload') {
+        setTimeout(() => { window.location.reload(); }, 1000);
+      } else {
+        setTimeout(() => { window.location.href = successRedirect; }, 1000);
+      }
+    }
+  };
+
+  const startCashfreeCheckout = async (plan, successRedirect) => {
+    const accessToken = getAccessToken();
+    const response = await axios.post(
+      `${config.apiUrl}/api/auth/cashfree/create-order/`,
+      { plan, currency },
+      { headers: { Authorization: `Bearer ${accessToken}` } }
+    );
+
+    const { payment_session_id, order_id, environment } = response.data;
+    const Cashfree = await loadCashfreeSdk();
+    const cashfree = Cashfree({ mode: environment === 'production' ? 'production' : 'sandbox' });
+    const result = await cashfree.checkout({
+      paymentSessionId: payment_session_id,
+      redirectTarget: '_modal',
+    });
+
+    if (result?.error) {
+      throw new Error(result.error.message || 'Payment cancelled.');
+    }
+
+    await verifyCashfreeOrder(order_id, accessToken, successRedirect);
+  };
+
   const handleSubscribe = async (plan) => {
     setLoading(plan);
     setError('');
     try {
       const accessToken = getAccessToken();
-      // Step 1: Create Razorpay order on backend
-      const response = await axios.post(
-        `${config.apiUrl}/api/auth/razorpay/create-order/`,
-        { plan, currency },
-        { headers: { Authorization: `Bearer ${accessToken}` } }
-      );
 
-      const { order_id, amount, currency: orderCurrency, key_id, user_email, user_name, description } = response.data;
+      if (isAdminTestUser()) {
+        const grantResponse = await axios.post(
+          `${config.apiUrl}/api/auth/grant-test-access/`,
+          { plan },
+          { headers: { Authorization: `Bearer ${accessToken}` } }
+        );
 
-      // Step 2: Open Razorpay checkout popup
-      const options = {
-        key: key_id,
-        amount: amount,
-        currency: orderCurrency,
-        name: getBranding().appName,
-        description: description,
-        order_id: order_id,
-        handler: async function (paymentResponse) {
-          // Step 3: Verify payment on backend
-          try {
-            const verifyResponse = await axios.post(
-              `${config.apiUrl}/api/auth/razorpay/verify-payment/`,
-              {
-                razorpay_order_id: paymentResponse.razorpay_order_id,
-                razorpay_payment_id: paymentResponse.razorpay_payment_id,
-                razorpay_signature: paymentResponse.razorpay_signature,
-                plan: plan,
-                currency: currency,
-              },
-              { headers: { Authorization: `Bearer ${accessToken}` } }
-            );
+        const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+        if (grantResponse.data.user) {
+          Object.assign(userData, grantResponse.data.user);
+          localStorage.setItem('userData', JSON.stringify(userData));
+        }
 
-            if (verifyResponse.data.success) {
-              const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-              userData.is_paid = true;
-              userData.subscription_plan = plan;
-              if (verifyResponse.data.user) {
-                Object.assign(userData, verifyResponse.data.user);
-              }
-              localStorage.setItem('userData', JSON.stringify(userData));
-              toast.success(verifyResponse.data.message || 'Payment successful!');
-              setTimeout(() => { window.location.href = '/recruiter-dashboard'; }, 1000);
-            }
-          } catch (verifyErr) {
-            console.error('Payment verification error:', verifyErr);
-            setError(verifyErr.response?.data?.error || 'Payment verification failed.');
-          }
-        },
-        prefill: {
-          email: user_email,
-          name: user_name,
-        },
-        theme: {
-          color: '#6366f1',
-        },
-        modal: {
-          ondismiss: function () {
-            setLoading('');
-            toast.error('Payment cancelled.');
-          },
-        },
-      };
+        toast.success('This test user has access to all paid features');
+        setTimeout(() => { window.location.href = '/recruiter-dashboard'; }, 1000);
+        return;
+      }
 
-      const rzp = new window.Razorpay(options);
-      rzp.on('payment.failed', function (response) {
-        setError(`Payment failed: ${response.error.description}`);
-        setLoading('');
-      });
-      rzp.open();
+      await startCashfreeCheckout(plan, '/recruiter-dashboard');
     } catch (err) {
       console.error('Checkout error:', err);
       setError(err.response?.data?.error || err.message || 'Failed to start checkout.');
+    } finally {
       setLoading('');
     }
   };
@@ -206,66 +219,9 @@ export default function PaymentPage() {
     setLoading(`monitor_${pack}`);
     setError('');
     try {
-      const accessToken = getAccessToken();
-      const response = await axios.post(
-        `${config.apiUrl}/api/auth/razorpay/create-order/`,
-        { plan: planKey, currency },
-        { headers: { Authorization: `Bearer ${accessToken}` } }
-      );
-
-      const { order_id, amount, currency: orderCurrency, key_id, user_email, user_name, description } = response.data;
-
-      const options = {
-        key: key_id,
-        amount: amount,
-        currency: orderCurrency,
-        name: getBranding().appName,
-        description: description,
-        order_id: order_id,
-        handler: async function (paymentResponse) {
-          try {
-            const verifyResponse = await axios.post(
-              `${config.apiUrl}/api/auth/razorpay/verify-payment/`,
-              {
-                razorpay_order_id: paymentResponse.razorpay_order_id,
-                razorpay_payment_id: paymentResponse.razorpay_payment_id,
-                razorpay_signature: paymentResponse.razorpay_signature,
-                plan: planKey,
-                currency: currency,
-              },
-              { headers: { Authorization: `Bearer ${accessToken}` } }
-            );
-
-            if (verifyResponse.data.success) {
-              toast.success(verifyResponse.data.message || 'Purchase successful!');
-              setTimeout(() => { window.location.reload(); }, 1000);
-            }
-          } catch (verifyErr) {
-            setError(verifyErr.response?.data?.error || 'Payment verification failed.');
-          }
-        },
-        prefill: {
-          email: user_email,
-          name: user_name,
-        },
-        theme: {
-          color: '#6366f1',
-        },
-        modal: {
-          ondismiss: function () {
-            setLoading('');
-          },
-        },
-      };
-
-      const rzp = new window.Razorpay(options);
-      rzp.on('payment.failed', function (response) {
-        setError(`Payment failed: ${response.error.description}`);
-        setLoading('');
-      });
-      rzp.open();
+      await startCashfreeCheckout(planKey, 'reload');
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to start checkout.');
+      setError(err.response?.data?.error || err.message || 'Failed to start checkout.');
     } finally {
       setLoading('');
     }
@@ -314,7 +270,6 @@ export default function PaymentPage() {
             Unlock the full power of {getBranding().appName}'s AI-driven recruitment platform.
           </p>
 
-          {/* Currency Toggle */}
           <div className="inline-flex items-center gap-2 bg-surface border border-gray-800 rounded-full p-1">
             <button
               onClick={() => setCurrency('usd')}
@@ -330,7 +285,7 @@ export default function PaymentPage() {
                 currency === 'inr' ? 'bg-primary text-dark' : 'text-gray-400 hover:text-white'
               }`}
             >
-              🇮🇳 INR
+              INR
             </button>
           </div>
         </motion.div>
@@ -354,7 +309,8 @@ export default function PaymentPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
-              className={`relative rounded-3xl p-8 border-2 transition-all duration-300 ${
+              onClick={() => setSelectedPlan(plan.id)}
+              className={`relative cursor-pointer rounded-3xl p-8 border-2 transition-all duration-300 ${
                 selectedPlan === plan.id
                   ? 'border-primary bg-primary/5 scale-[1.02]'
                   : 'border-gray-800 bg-surface hover:border-gray-700'
@@ -505,7 +461,7 @@ export default function PaymentPage() {
           className="grid grid-cols-1 md:grid-cols-3 gap-6"
         >
           {[
-            { icon: Shield, title: 'Secure Payments', desc: 'Powered by Razorpay' },
+            { icon: Shield, title: 'Secure Payments', desc: 'Powered by Cashfree' },
             { icon: Zap, title: 'Instant Access', desc: 'Start recruiting immediately' },
             { icon: TrendingUp, title: 'Scale Anytime', desc: 'Upgrade or downgrade easily' },
           ].map((benefit, i) => (

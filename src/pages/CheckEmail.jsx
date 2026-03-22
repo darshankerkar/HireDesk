@@ -77,8 +77,10 @@ export default function CheckEmail() {
         localStorage.removeItem('signup_pending');
         setVerified(true);
         toast.success('Email verified!');
-        // Redirect based on role: recruiters go to payment, candidates to dashboard
-        const redirectUrl = (user.role === 'RECRUITER' && !user.is_paid) ? '/payment' : '/';
+        // Redirect based on role after OTP verification
+        const redirectUrl = user.role === 'RECRUITER'
+          ? (user.is_paid ? '/recruiter-dashboard' : '/payment')
+          : '/candidate-dashboard';
         setTimeout(() => { window.location.href = redirectUrl; }, 1500);
       }
     } catch (err) {
